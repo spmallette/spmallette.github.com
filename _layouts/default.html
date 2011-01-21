@@ -2,21 +2,29 @@
 <html> 
   <head> 
     <meta charset="UTF-8"> 
-    <title>Rexster</title> 
+    <title>Stephen of Genoprime</title> 
     <link rel="stylesheet" href="/css/typography.css" type="text/css" media="all" />
     <link rel="stylesheet" href="/css/elastic.css" type="text/css" media="all" /> 
+    <link rel="stylesheet" href="/css/site.css" type="text/css" media="all" /> 
   </head>
-  <body style="background-color:gray">
-    <div class="unit on-3 columns">
-      <div class="elastic column"></div>
+  <body>
+    <div class="unit on-2 columns">
       <div class="fixed column">
-        <div class="container" style="width:600px;background-color:white">
-	  <h1>Stephen Mallette</h1>
-          <h2>Software Engineering Is Fun</h2>
+        <div id="main" class="container">
+	  <h1>Stephen of Genoprime</h1> 
 	  {{ content }}
 	</div>
       <div>
-      <div class="elastic column"></div>
+      <div class="fixed column">
+        <div id="right" class="container">
+	  <h3>Recent Posts</h3>
+          <ul>
+	    {% for post in site.posts %}
+	      <li><span>{{ post.date | date_to_string }}</span><a href="{{ post.url }}">{{ post.title }}</a></li>
+	    {% endfor %}
+	  </ul>
+        </div>
+      </div>
     </div>
   </body>
 </html>

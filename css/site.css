@@ -1,0 +1,12 @@
+html { 
+  background-color:gray; 
+}
+#main {
+  background-color:white;
+  margin:5px;
+  width:600px;
+}
+#right {
+  margin:5px;
+  width:200px;
+}
