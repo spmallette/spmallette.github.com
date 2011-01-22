@@ -9,20 +9,22 @@
   </head>
   <body>
     <div class="unit on-2 columns">
-      <div class="fixed column">
-        <div id="main" class="container">
-	  <h1>Stephen of Genoprime</h1> 
-	  {{ content }}
-	</div>
-      <div>
-      <div class="fixed column">
-        <div id="right" class="container">
-	  <h3>Recent Posts</h3>
-          <ul>
-	    {% for post in site.posts %}
-	      <li><span>{{ post.date | date_to_string }}</span><a href="{{ post.url }}">{{ post.title }}</a></li>
-	    {% endfor %}
-	  </ul>
+      <div class="container">
+        <div class="fixed column">
+          <div id="main" class="container">
+	    <h1>Stephen of Genoprime</h1> 
+	    {{ content }}
+	  </div>
+        <div>
+        <div class="fixed column">
+          <div id="right" class="container">
+	    <h3>Recent Posts</h3>
+            <ul>
+	      {% for post in site.posts %}
+	        <li><span>{{ post.date | date_to_string }}</span><a href="{{ post.url }}">{{ post.title }}</a></li>
+	      {% endfor %}
+	    </ul>
+          </div>
         </div>
       </div>
     </div>
