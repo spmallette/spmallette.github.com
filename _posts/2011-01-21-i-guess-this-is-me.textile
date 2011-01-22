@@ -1,6 +1,7 @@
 h1. I Guess this Is Me
+
 I was asked to create an avatar for use on the http://tinkerpop.com web site.  It is debatable as to whether or not I've captured my likeness in any way, shape or form, but it's close enough for purposes of the exercise.
 
-!http://www.gravatar.com/avatars/65f4574b28165676ebb4bf7b644489ff!
+!http://www.gravatar.com/avatar/65f4574b28165676ebb4bf7b644489ff?s=80!
 
 A reasonable facsimile...I guess.
