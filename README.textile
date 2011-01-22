@@ -1,4 +1,4 @@
-h1. My Blog
+h1. stephen@genoprime website
 
-The content for my blog.
+The content for the web site.  
 
