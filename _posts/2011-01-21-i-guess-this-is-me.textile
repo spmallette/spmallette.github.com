@@ -2,7 +2,9 @@
 title: I Guess This is Me
 layout: post
 ---
-h1. {{ page.title}}
+h1. {{ page.title }}
+
+h2. {{ post.date }}
 
 I was asked to create an avatar for use on the "tinkerpop":http://tinkerpop.com web site.  It is debatable as to whether or not I've captured my likeness in any way, shape or form, but it's close enough for purposes of the exercise.
 
