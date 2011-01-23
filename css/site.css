@@ -1,5 +1,6 @@
 html { 
-  background-color:gray; 
+  background-color:url('../images/bg.gif');
+  background-repeat:repeat-x; 
 }
 #main {
   background-color:white;
