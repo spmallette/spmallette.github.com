@@ -4,11 +4,9 @@ html {
 #main {
   background-color:white;
   margin:5px;
-  width:600px;
+  width:75%;
 }
 #right {
   margin:5px;
-  width:200px;
-  background-color:gray; 
-  color:white;
+  width:25%;
 }
