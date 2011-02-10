@@ -1,0 +1,15 @@
+---
+title: Beyond Arbitrary Versioning
+layout: post
+---
+
+While reading more about "Zombie.js":http://zombie.labnotes.org/ and looking at javascript unit testing options, I came across "Sinon.js":http://sinonjs.org/.  I liked the look of both and am quite interested to see how they might help on the various projects I'm associated with at the moment.  Unit testing javascript and browser testing can be a missing link in even the most complete test suites and I'm quite interested in understanding how to fill that gap.
+
+Before I got that far, however, I noted a link at the bottom of the "Sinon.js":http://sinonjs.org/ web site.  It read:
+
+bq. Sinon uses "Semantic versioning":http://semver.org/
+
+The Semantic Versioning site is little more than a single page that describes a simple specification for how to increment version numbers of releases for purpose of more clearly conveying the meaning of a change to a public API.  Attaching a defined meaning to the version number, takes away the somewhat arbitrary method in which version numbers can be assigned.  Even when version numbering strategies are not necessarily arbitrary, and definitions exist within the project for version number increments, adhering to a documented public standard makes it easier for users to understand the meaning of change.
+
+As the manifesto states quite clearly, Semantic Versioning "is not a new or revolutionary idea".  As developers, we think in these versioning terms all the time.  I think that I found it so interesting because Semantic Versioning creates an opportunity to not only think in these terms all the time, but to think in the _same_ terms all the time.
+
