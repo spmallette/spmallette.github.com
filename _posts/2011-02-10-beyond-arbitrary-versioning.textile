@@ -5,7 +5,7 @@ layout: post
 
 While reading more about "Zombie.js":http://zombie.labnotes.org/ and looking at javascript unit testing options, I came across "Sinon.js":http://sinonjs.org/.  I liked the look of both and am quite interested to see how they might help on the various projects I'm associated with at the moment.  Unit testing javascript and browser testing can be a missing link in even the most complete test suites and I'm quite interested in understanding how to fill that gap.
 
-Before I got that far, however, I noted a link at the bottom of the "Sinon.js":http://sinonjs.org/ web site.  It read:
+Before I got terribly far in my research, however, I noted a link at the bottom of the "Sinon.js":http://sinonjs.org/ web site.  It read:
 
 bq. Sinon uses "Semantic versioning":http://semver.org/
 
