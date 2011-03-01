@@ -1,0 +1,25 @@
+---
+title: .NET Client for Kafka
+layout: post
+---
+
+It's a bit early stage, but I forked the "Kafka":https://github.com/kafka-dev/kafka project on GitHub today to add a .NET client.  Kafka is a distributed publish/subscribe messaging system and looks very promising.  It is aimed at capturing activity stream data in the vein of Facebook's "Scribe":https://github.com/facebook/scribe and Cloudera's "Flume":https://github.com/cloudera/flume.  I've never look to deeply into Scribe, but was very interested in Flume to the point of forking it to add some features. When I came across Kafka I made an immediate connection to its architecture (probably due to the simple publish/subscribe model) and thought of an area where I might make use of it.
+
+The area where I might make use of it, involves a bit of .NET so I needed a .NET client that would communicate with Kafka for me.  Since it wasn't available (and I'm not surprised by that, of course), I figured I'd strike a few lines of code and get it done.
+
+I executed the first commit to my fork just a few minutes ago and it contained basic support for a .NET message producer.  The standard basic approach to sending off one or more messages looks something like this:
+
+```csharp
+string payload1 = "kafka 1.";
+byte[] payloadData1 = Encoding.UTF8.GetBytes(payload1);
+Message msg1 = new Message(payloadData1);
+
+string payload2 = "kafka 2.";
+byte[] payloadData2 = Encoding.UTF8.GetBytes(payload2);
+Message msg2 = new Message(payloadData2);
+
+Producer producer = new Producer("192.168.50.201", 9092);
+producer.Send("test", 0, new List<Message> { msg1, msg2 });
+```
+
+I need to get a basic consumer working next and then think about some more advanced features for the library.
