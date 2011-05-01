@@ -2,17 +2,19 @@
 layout: default
 ---
 
-<div>
-  <a href="http://stephen.genoprime.com">&lt;&lt; Back</a>
-</div>
-<div>
-  <h3>
-    [{{ page.date | date_to_string }}] {{ page.title }}
-  </h3>
+<div class="container" style="margin:5px">
   <div>
-    {{ content }}
+    <a href="http://stephen.genoprime.com">&lt;&lt; Back</a>
   </div>
-</div>
-<div>
-  <a href="http://stephen.genoprime.com">&lt;&lt; Back</a>
+  <div>
+    <h3>
+      [{{ page.date | date_to_string }}] {{ page.title }}
+    </h3>
+    <div>
+      {{ content }}
+    </div>
+  </div>
+  <div>
+    <a href="http://stephen.genoprime.com">&lt;&lt; Back</a>
+  </div>
 </div>
