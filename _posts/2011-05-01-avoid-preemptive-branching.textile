@@ -11,14 +11,14 @@ bq. Increases the work-in-progress and creates a lot of planning, management, ve
 
 The daily challenge of playing traffic cop to a team of committers under pressure to be "done" can be quite time consuming and frustrating.  Consider some of the annoyances:
 
-* Every individual on the team needs to understand where they need to do their work.  You might have a _hardening team_ working in the release branch, but there is a good chance that these team members are also the "most trusted and knowledgeable" members of your team.  There is a good chance that, in some cases, they will be needed to split their time between the release branch and mainline.  While what needs to be communicated is typically simple (eg. Bug Fix A goes in mainline and Bug Fix B goes in the release branch), doing it in an effective way requires process and takes time.
+* Every individual on the team needs to understand where they need to do their work.  You might have a _hardening team_ working in the release branch, but there is a good chance that these team members are also the "most trusted and knowledgeable" members of your team.  As such, there will be cases where they will be needed to split their time between the release branch and mainline.  While what needs to be communicated is typically simple (eg. Bug Fix A goes in mainline and Bug Fix B goes in the release branch), doing it in an effective way requires process and takes time.
 * Even if the team has overcome the hardship above, there is always the inevitable realization that a change that went to mainline was something that the release branch depended on for hardening.  Those changes then need to be recreated manually in the release branch, which inevitably create merge conflicts when going back to mainline.  
 * The longer a release branch lives, the greater the chance that the merge path among branches can become complex or in the worst case impossible.  
 
 In addition to the reasoning of the author against a preemptive branch, I also see the following risks:
 
 * All the merging and branching strategy that I describe above can easily become overly centralized such that only one person knows what is going on in source control.
-* The goal of hardening is lost the longer the release branch exists.  As the release remains in hardening mode past its expected delivery date, the demand for additional features promised can pressure the team into sneaking some of those features into the release branch.  
+* The goal of just hardening a release is sometimes lost the longer the release branch exists.  As the release remains in hardening mode past its expected delivery date, the demand for additional features promised can pressure the team into sneaking some of those features into the release branch.  
 * The release branch may fail to ever truly harden.  This failure could be a result of the previously described feature-sneak, but may also be the result of too much technical debt.
 * The sum negative impact of a preemptive branch chips away at the team's agility.
  
