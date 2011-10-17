@@ -5,8 +5,11 @@ html {
 #main {
   background-color:white;
   margin:5px;
-  border: 1px solid red;
+  border: 0px solid red;
 }
 #right {
   margin:5px;
+}
+.container {
+  border: 1px solid red; 
 }
