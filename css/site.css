@@ -5,6 +5,7 @@ html {
 #main {
   background-color:white;
   margin:5px;
+  broder: 1px solid red;
 }
 #right {
   margin:5px;
