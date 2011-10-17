@@ -38,6 +38,8 @@ body {font:13px/1.231 ubuntu,arial,helvetica,clean,sans-serif;*font-size:small;*
 select,input,button,textarea {font:99% arial,helvetica,clean,sans-serif;}
 table {font-size:inherit;font:100%;}pre,code,kbd,samp,tt {font-family:monospace;*font-size:108%;}
 
+body {margin: 0 auto;}
+
 /*
 Elastic CSS Framework
 Released under the MIT, BSD, and GPL Licenses.
