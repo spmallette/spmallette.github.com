@@ -4,6 +4,7 @@ html {
 }
 body {
   margin: 0 auto;
+  align: center;
   border: 1px solid red;
 }
 #wrapper {
