@@ -1,2 +1,3 @@
 markdown: rdiscount
 pygments: true
+baseUri: http://stephen.genoprime.com
