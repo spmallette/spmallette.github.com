@@ -10,7 +10,7 @@ I wanted to set up an Amazon Elastic Load Balancer(ELB) with SSL in front of a s
 
 I found that this could be peformed pretty easily with the "URL Rewrite Module":http://www.iis.net/download/urlrewrite with the following configuration:
 
-```xml
+{% highlight xml %}
 <system.webServer>
     ...
     <rewrite xdt:Transform="Insert">
@@ -25,6 +25,6 @@ I found that this could be peformed pretty easily with the "URL Rewrite Module":
         </rules>
     </rewrite>
 </system.webServer>
-```
+{% endhighlight %}
 
 The key is knowing that the ELB passes the @X_FORWARDED_PROTO@ request header.  By checking if the request did not originate as @https@, the client can be redirected to their requested URI with SSL.
