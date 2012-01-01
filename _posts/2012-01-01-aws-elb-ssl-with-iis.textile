@@ -1,0 +1,30 @@
+---
+title: IIS Configuration Behind Elastic Load Balancer With SSL
+layout: post
+---
+
+I wanted to set up an Amazon Elastic Load Balancer(ELB) with SSL in front of a set of IIS servers, where the IIS servers simply served over port 80.  I further wanted it to work such that requests to port 80 forwarded to the SSL port on 443. Basically, the ELB port forwarding looks like:
+
+* ELB forwards requests on port 443 to port 80 of IIS.
+* ELB forwards requests on port 80 to port 80 of IIS.
+
+I found that this could be peformed pretty easily with the "URL Rewrite Module":http://www.iis.net/download/urlrewrite with the following configuration:
+
+```xml
+<system.webServer>
+    ...
+    <rewrite xdt:Transform="Insert">
+        <rules>
+            <rule name="HTTPs Redirect" stopProcessing="true">
+                <match url="(.*)" />
+                <conditions>
+                    <add input="{ALL_HTTP}" matchType="Pattern" pattern="HTTP_X_FORWARDED_PROTO:https" ignoreCase="true" negate="true" />
+                </conditions>
+                <action type="Redirect" url="https://{HTTP_HOST}/{R:1}" />
+            </rule>
+        </rules>
+    </rewrite>
+</system.webServer>
+```
+
+The key is knowing that the ELB passes the @X_FORWARDED_PROTO@ request header.  By checking if the request did not originate as @https@, the client can be redirected to their requested URI with SSL.
