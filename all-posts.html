@@ -1,10 +1,13 @@
 ---
-layout: page
-title: Home
+layout: default
+title: All Posts
 ---
 
 <div>
+  <h3>Recent Posts</h3>
+  <ul>
   {% for post in site.posts %}
       <li><a href="{{ post.url }}">{{ post.title }}</a><div>{{ post.date | date_to_string }}</div></li>
   {% endfor %}
+  </ul>
 </div>
