@@ -3,9 +3,7 @@ title: But the Tests Ran...
 layout: post
 ---
 
-I write this as a bit of a penance and a reminder after a difficult day as a software engineer.
-
-A great set of automated tests are critical to building great software.  For a test suite to be considered "great" it should likely extend beyond just some quantitative metric like the total number of tests or code coverage percentages.  Greatness is additionally defined by the quality of the test set as determined by those who know the code and the features.  
+I write this as a bit of a penance and a reminder after a difficult day as a software engineer.  A great set of automated tests are critical to building great software.  For a test suite to be considered "great" it should likely extend beyond just some quantitative metric like the total number of tests or code coverage percentages.  Greatness is additionally defined by the quality of the test set as determined by those who know the code and the features.  
 
 Greatness can breed confidence.  Confidence to refactor.  Confidence to release and deploy.
 
