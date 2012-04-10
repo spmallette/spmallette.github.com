@@ -5,10 +5,10 @@ title: Home
 
 <div>
   <h1 style="float:left">Recent Posts</h1>
-  <a href="http://feeds.feedburner.com/stephenatgenoprime" >
+  <a href="http://feeds.feedburner.com/stephenatgenoprime" style="float:right">
     <img src="/images/rss.png" alt="Subscribe to RSS Feed" style="height:24px;width:24px"/>
   </a>
-  <div clear:both;>
+  <div style="float:none">
     {% for post in site.posts limit:5 %}
     <div>
       <h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
