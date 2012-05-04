@@ -3,7 +3,7 @@ title: Custom Graph Configuration In Rexster
 layout: post
 ---
 
-"Rexster":http://rexster.tinkerpop.com is a graph server that is capable of exposing any "Blueprints":http://blueprints.tinkerpop.com enabled graph through different interfaces, such as REST.  Rexster is "packaged" with the common Blueprints implementations that are maintained by TinkerPop.  At this time, given Rexster 0.8, those implementations include:
+"Rexster":http://rexster.tinkerpop.com is a graph server that is capable of exposing any "Blueprints":http://blueprints.tinkerpop.com enabled graph through different interfaces, such as REST.  Rexster is "packaged" with the common Blueprints implementations that are maintained by "TinkerPop":http://tinkerpop.com.  At this time, given Rexster 0.8, those implementations include:
 
 * "TinkerGraph":http://wiki.github.com/tinkerpop/gremlin/tinkergraph in-memory graph
 * "Neo4j":http://neo4j.org/ graph database
@@ -11,7 +11,7 @@ layout: post
 * "DEX":http://www.sparsity-technologies.com/dex graph database
 * "Sesame 2.0":http://www.openrdf.org compliant RDF stores
 
-Outside of these implementations, there are others that are not maintained by TinkerPop, such as the one from "Infinite Graph":http://www.infinitegraph.com/.  There is also the recently submitted "pull request":https://github.com/tinkerpop/blueprints/pull/238 that implements Blueprints over "Datomic":http://datomic.com/, which, as of today, has not yet been merged.  In addition, one might find themselves in a scenario where they have some sort of "private" Blueprints implementation over some other data store.  Even though Rexster doesn't have explicit, native understanding of these externalized implementations, it is capable of serving them if configured properly to do so.
+Outside of these implementations, there are others that are not maintained by TinkerPop, such as the one from "InfiniteGraph":http://www.infinitegraph.com/.  There is also the recently submitted "pull request":https://github.com/tinkerpop/blueprints/pull/238 that implements Blueprints over "Datomic":http://datomic.com/, which, as of today, has not yet been merged.  In addition, one might find themselves in a scenario where they have some sort of "private" Blueprints implementation over some other data store.  Even though Rexster doesn't have explicit, native understanding of these externalized implementations, it is capable of serving them if configured properly to do so.
 
 Rexster is configured via its @rexster.xml@ file.  A typical configuration of a TinkerGraph looks like this:
 
