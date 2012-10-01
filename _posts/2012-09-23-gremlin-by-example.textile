@@ -1,5 +1,5 @@
 ---
-title: GremlinDocs: Gremlin by Example
+title: GremlinDocs - Gremlin by Example
 layout: post
 ---
 
