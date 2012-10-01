@@ -1,0 +1,10 @@
+---
+title: GremlinDocs: Gremlin by Example
+layout: post
+---
+
+I've been working with "clojure":http://clojure.org for some time now, mostly using it for small, fast development efforts so that I could become more familiar with it.  In that time, I came to really like the format of "ClojureDocs":http://clojuredocs.org.  It provides code snippets as samples for each function which clearly demonstrate how it works.
+
+I started thinking that "Gremlin":http://gremlin.tinkerpop.com would benefit from that kind of documentation.  With that in mind, I created "GremlinDocs.com":http://gremlindocs.com.  GremlinDocs is meant to be a companion to the Gremlin wiki, a reference for both beginners and advanced Gremlin users alike.  It is a quick reference to the functions that Gremlin has with examples taken from the Gremlin REPL to demonstrate those functions. 
+
+GremlinDocs is actually a GitHub repository where all the content for it is contained within a single @README.md@ file, with the idea that the repository could be forked and community contributions would help further improve the documentation.
