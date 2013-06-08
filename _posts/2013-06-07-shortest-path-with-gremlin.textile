@@ -1,0 +1,14 @@
+---
+title: Shortest Path With Gremlin
+layout: post
+---
+
+There has been a fair amount of discussion on finding shortests paths using Gremlin both in the "Gremlin Users":https://groups.google.com/forum/?fromgroups#!forum/gremlin-users mailing list and on StackOverflow.  The questions asked sent me into a fair bit of depth on the subject, allowing for a better understanding of how best to implement such traversals in Gremlin.
+
+The result of this effort are as follows:
+
+* An answer to "Gremlin: How to get more than 1 shortest path with the same number of edges?":http://stackoverflow.com/questions/16849737/gremlin-how-to-get-more-than-1-shortest-path-with-same-number-of-edges on StackOverflow
+* A Gremlin-based answer to "Is it possible to get the shortest path with traversal cost by using Cypher or Gremlin":http://stackoverflow.com/questions/16812679/is-it-possible-to-get-the-shortest-path-with-traversal-cost-by-using-cypher-or-g/16872807 on StackOverflow.
+* An update to the GremlinDocs "Shortest Path Recipe":http://gremlindocs.com/#recipes/shortest-path that provides much greater details on the topic (received some help from Daniel Kuppitz in this regard).
+
+
