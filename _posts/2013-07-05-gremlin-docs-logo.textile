@@ -5,7 +5,7 @@ layout: post
 
 "Ketrina Yim":http://ketrinadrawsalot.tumblr.com/ who produces the wonderful and fantastical characters of "TinkerPop":http://tinkerpop.com has brought some new life to the GremlinDocs":http://gremlindocs.com web site.  She has illustrated a new logo that brings a unique look to the site and brings some character to something that would otherwise just be a bunch of words and code.
 
-!https://github.com/tinkerpop/gremlin/raw/master/doc/images/gremlin-logo.png!
+!https://raw.github.com/tinkerpop/gremlin/master/doc/images/gremlindocs-logo.png!
 
 I see a very simple story in that picture:
 
