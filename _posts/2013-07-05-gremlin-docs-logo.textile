@@ -1,0 +1,15 @@
+---
+title: New GremlinDocs.com Logo
+layout: post
+---
+
+"Ketrina Yim":http://ketrinadrawsalot.tumblr.com/ who produces the wonderful and fantastical characters of "TinkerPop":http://tinkerpop.com has brought some new life to the GremlinDocs":http://gremlindocs.com web site.  She has illustrated a new logo that brings a unique look to the site and brings some character to something that would otherwise just be a bunch of words and code.
+
+!https://raw.github.com/tinkerpop/gremlin/master/doc/images/gremlindocs-logo.png
+
+I see a very simple story in that picture:
+
+bq. When not traversing graphs, Gremlin takes some of his free moments to write his autobiography.  Quill and scroll are his writing implements of choice, producing characters of sweeping grace that whimsically flow together to tell stories of graph exploration.  
+
+These stories are _GremlinDocs_.
+
