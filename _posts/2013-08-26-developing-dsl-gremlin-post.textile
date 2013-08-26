@@ -1,0 +1,6 @@
+---
+title: Article - Developing a Domain Specific Language in Gremlin
+layout: post
+---
+
+The "gremlin-users":https://groups.google.com/forum/#!forum/gremlin-users mailing list always has questions asking how to _productionalize_ "Gremlin":http://gremlin.tinkerpop.com.  In a recent blog post for "Aurelius":http://www.thinkaurelius.com, entitled "Developing a Domain Specific Language in Gremlin":http://thinkaurelius.com/2013/07/25/developing-a-domain-specific-language-in-gremlin/, I describe some common patterns for working Gremlin into a production environment.  The patterns all relate to the concept of writing a "Domain Specific Language":http://en.wikipedia.org/wiki/Domain-specific_language (DSL) on top of Gremlin to allow the language of the domain to traverse the graph.  The DSL approach to Gremlin yields many benefits and should make development and maintenance of Gremlin code much more straightforward.
