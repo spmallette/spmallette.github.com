@@ -6,7 +6,10 @@ layout: post
 If you're working with "Titan":http://titan.thinkaurelius.com in "Clojure":http://clojure.org there's a good chance you're using "Lein":https://github.com/technomancy/leiningen and if you are there's also a chance that you are building a "jar with dependencies" via @lein uberjar@.  I was doing just that yesterday, when I was suddenly tossed into a point of deep frustration.  I watched happily as my code ran perfectly in my local environment with @lein run@, but after doing a @lein uberjar@ and pushing my fat jar to a server instance in EC2 I got this:
 
 {% highlight text %}
-Caused by: java.lang.IllegalArgumentException: A SPI class of type org.apache.lucene.codecs.PostingsFormat with name 'Lucene41' does not exist. You need to add the corresponding JAR file supporting this SPI to your classpath.The current classpath supports the following names: [Pulsing41, SimpleText, Memory, BloomFilter, Direct]
+Caused by: java.lang.IllegalArgumentException: A SPI class of type org.apache.lucene.codecs.PostingsFormat 
+  with name 'Lucene41' does not exist. You need to add the corresponding JAR file supporting this SPI 
+  to your classpath.The current classpath supports the following names: [Pulsing41, SimpleText, Memory, 
+    BloomFilter, Direct]
 	at org.apache.lucene.util.NamedSPILoader.lookup(NamedSPILoader.java:109)
 	at org.apache.lucene.codecs.PostingsFormat.forName(PostingsFormat.java:100)
 	at org.elasticsearch.index.codec.postingsformat.PostingFormats.<clinit>(PostingFormats.java:76) 
