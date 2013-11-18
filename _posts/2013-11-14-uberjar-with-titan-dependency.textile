@@ -27,7 +27,7 @@ META-INF/services/org.apache.lucene.codecs.PostingsFormat
 For my "jar with dependencies" to be functional, I would need those files to merge with one another as opposed to simply performing an overwrite.  In Maven, you would likely use the "Shade Plugin":http://maven.apache.org/plugins/maven-shade-plugin/ configured to do a "resource trasformation":http://maven.apache.org/plugins/maven-shade-plugin/examples/resource-transformers.html.  Up until yesterday, I wasn't aware of how to do that with Lein, but after some research realized that a recently added feature to Lein (as of 2.3.3) provided a similar feature set.  I simply added the following snippet to my @project.clj@:
 
 {% highlight text %}
-:uberjar-merge-with {#"org\.apache\.lucene\.codes\.*" [slurp str spit]}
+:uberjar-merge-with {#"org\.apache\.lucene\.codecs\.*" [slurp str spit]}
 {% endhighlight %}
 
 which merged those various files together instead of writing one over the other.  At that point, my "jar with dependencies" was good to go.  You can read more about @uberjar-merge-with@ "here":https://github.com/technomancy/leiningen/blob/2.3.3/sample.project.clj#L342.
