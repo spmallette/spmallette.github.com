@@ -1,0 +1,41 @@
+---
+title: Use has() Over filter()
+layout: post
+---
+
+There's been some discussion on the Aurelius "mailing list":https://groups.google.com/forum/#!forum/aureliusgraphs regarding the advantages of using a single `filter` with a complex closure over usage of multiple `has` steps.  You can read more about the discussion "here":https://groups.google.com/forum/#!topic/aureliusgraphs/nhn9IBsWIYw.  The core of the discussion is about realizing that "Gremlin":http://gremlin.tinkerpop.com will compile `has` steps down to query objects that can be used by the underlying graph store to "optimize the traversal":https://github.com/tinkerpop/gremlin/wiki/Traversal-Optimization#query-optimization, whereas a `filter` is merely a function that evaluates an item in the pipeline.  Therefore, using `has` is generally better than using `filter`.
+
+In midst of the discussion, I decided to try a small experiment.  I wanted to show that two `has` steps were no slower than a single `filter` operation that performed the same function, even when no query optimizations were performed by the underlying store.  "Titan":http://titan.thinkaurelius.com does perform these optimizations, so I decided to utilize a "TinkerGraph":https://github.com/tinkerpop/blueprints/wiki/TinkerGraph instead.  TinkerGraph utilizes "DefaultQuery":https://github.com/tinkerpop/blueprints/blob/master/blueprints-core/src/main/java/com/tinkerpop/blueprints/util/DefaultQuery.java to process `has` operations.  `DefaultQuery` is used by all Blueprints implementations that do not implement their own optimizations, so the results of this experiment should carry across all Blueprints implementations that don't optimize.
+
+To do the experiment, I opened a Gremlin REPL and constructed a graph with a half-million vertices with some random property values.
+
+{% highlight text %}
+gremlin> g = new TinkerGraph()                                                                        
+==>tinkergraph[vertices:0 edges:0]
+gremlin> r = new Random()                                                                             
+==>java.util.Random@4841a34
+gremlin> (0..<500000).each{g.addVertex([i:it,r:r.nextLong().toString().padLeft(21,"0")])};null      
+==>null
+gremlin> g.v(0).map
+==>{r=001842268616820437679, i=0}
+{% endhighlight %}
+
+I then wrote two queries.  The first used `filter` with two property evaluations to determine whether they met the restriction or not and the second used two `has` operations one for each property being evaluated.  I ensured that both queries returned the same number of vertices.
+
+{% highlight text %}
+gremlin> g.V.filter{it.r>="00000000000" && it.i>=200000}.count()                               
+==>150211
+gremlin> g.V.has("r",T.gte,"00000000000").has("i",T.gte,200000).count()                        
+==>150211
+{% endhighlight %}
+
+Once assured that I was returning the same data for both traversals, I timed the results.
+
+{% highlight text %}
+gremlin> s=System.currentTimeMillis();g.V.has("r",T.gte,"00000000000").has("i",T.gte,200000).iterate();System.currentTimeMillis()-s
+==>95
+gremlin> s=System.currentTimeMillis();g.V.filter{it.r>="00000000000" && it.i>=200000}.iterate();System.currentTimeMillis()-s       
+==>5521
+{% endhighlight %}
+
+The results show a traversal with two `has` steps performs significantly better than a single `filter` step.  What's interesting about this finding, is the fact that TinkerGraph is not optimizing the query when processing the `has`.  The results basically mean that finding a way to use `has` instead of `filter` will generally result in better traversal performance even for Blueprints implementations that don't support query optimizations.
