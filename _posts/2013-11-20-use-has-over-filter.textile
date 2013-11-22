@@ -40,4 +40,18 @@ gremlin> s=System.currentTimeMillis();g.V.filter{it.r>="00000000000" && it.i>=20
 ==>5521
 {% endhighlight %}
 
-The results show a traversal with two `has` steps performs significantly better than a single `filter` step.  What's interesting about this finding, is the fact that TinkerGraph is not optimizing the query when processing the `has`.  The results basically mean that finding a way to use `has` instead of `filter` will generally result in better traversal performance even for Blueprints implementations that don't support query optimizations.
+Of course, I was quickly reminded that I wasn't using `getProperty` in my `filter` which balanced the numbers considerably:
+
+{% highlight text %}
+gremlin> s=System.currentTimeMillis();g.V.has("r",T.gte,"00000000000").has("i",T.gte,200000)
+         .iterate();System.currentTimeMillis()-s
+==>95
+gremlin> s=System.currentTimeMillis();g.V.filter{
+            it.getProperty("r")>="00000000000" && it.getProperty("i")>=200000
+          }.iterate();System.currentTimeMillis()-s       
+==>150
+{% endhighlight %}
+
+The use of reflection to get the property value is very expensive and something I don't use in production code (I shouldn't have missed that).
+
+The results show a traversal with two `has` steps performs somewhat better than a single `filter` step.  What's interesting about this finding, is the fact that TinkerGraph is not optimizing the query when processing the `has`.  The results basically mean that finding a way to use `has` instead of `filter` will generally result in better traversal performance even for Blueprints implementations that don't support query optimizations.  
