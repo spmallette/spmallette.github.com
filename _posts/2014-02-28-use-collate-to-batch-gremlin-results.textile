@@ -10,7 +10,8 @@ Consider a situation where you want to write some Gremlin to pull some data from
 {% highlight text %}
 gremlin> g  = TinkerGraphFactory.createTinkerGraph()
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> g.V.name.gather.transform{sql.rows("SELECT * FROM toy WHERE n IN ('" + it.join("','") + "')")}.next()
+gremlin> g.V.name.gather.transform{
+             sql.rows("SELECT * FROM toy WHERE n IN ('" + it.join("','") + "')")}.next()
 ==> ...
 {% endhighlight %}
 
@@ -35,7 +36,8 @@ gremlin> g.V.name.toList().collate(2)
 Using @collate@, the names are placed in batches of two, where each batch will be iterated into the @transform@ effectively creating a batched approach to issuing the SQL query.  In this case, three separate queries would be executed, each representing one small chunk of the total data to be retrieved.  The following code shows the modified code using @collate@:
 
 {% highlight text %}
-gremlin> g.V.name.toList().collate(2).transform{sql.rows("SELECT * FROM toy WHERE n IN ('" + it.join("','") + "')")}.scatter.toList()
+gremlin> g.V.name.toList().collate(2).transform{
+             sql.rows("SELECT * FROM toy WHERE n IN ('" + it.join("','") + "')")}.scatter.toList()
 ==> ...
 {% endhighlight %}
 
