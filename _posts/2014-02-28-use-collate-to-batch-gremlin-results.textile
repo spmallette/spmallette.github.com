@@ -5,7 +5,7 @@ layout: post
 
 Groovy has many great functions and syntax that can expand the capabilities and flexibility of the Gremlin programming language.  A recent "polyglot query":http://thinkaurelius.com/2013/02/04/polyglot-persistence-and-query-with-gremlin/ I came across, highlighted how important it can be to know Groovy as well as you know Gremlin.
 
-Consider a situation where you want to write some Gremlin to pull some data from the TinkerPop "toy graph":https://github.com/tinkerpop/blueprints/raw/master/doc/images/graph-example-1.jpg to then pass to a query sent to a MySQL database.  It might look something like this:
+Consider a situation where you want to write some Gremlin to pull some data from the TinkerPop toy graph to then pass to a query sent to a MySQL database.  It might look something like this:
 
 {% highlight text %}
 gremlin> g  = TinkerGraphFactory.createTinkerGraph()
