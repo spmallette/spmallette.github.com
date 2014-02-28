@@ -41,6 +41,6 @@ gremlin> g.V.name.toList().collate(2).transform{
 ==> ...
 {% endhighlight %}
 
-Note that the end of the statement changed as well, wher the use of @scatter@ unrolls the rows returned from the database into a @List@.  This part effectively reassembles the result data to a single @List@ just as would have been done in the single SQL request in the original traversal.  
+Note that the end of the statement changed as well, where the use of @scatter@ unrolls the rows returned from the database into a @List@.  This part effectively reassembles the result data to a single @List@, just as would have been done in the single SQL request in the original traversal.  
 
 Groovy has many useful functions.  Some are better known than others, but every once in a while a lesser known one might be just what is needed to get the job done.  
