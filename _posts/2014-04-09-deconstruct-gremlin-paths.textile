@@ -1,0 +1,40 @@
+---
+title: Deconstruct Gremlin Paths
+layout: post
+---
+
+I mentioned to someone recently that to be a great at "Gremlin":http://gremlin.tinkerpop.com, you have to be great at "Groovy":http://groovy.codehaus.org.  There is just too much syntactic sugar and shorthand in Groovy to just ignore.  One such bit of Groovy goodness lies in its ability to destructure lists into variables:
+ 
+{% highlight text %}
+gremlin> (x,y,z) = [10,20,30]
+==>10
+==>20
+==>30
+gremlin> y
+==>20
+gremlin> x + y + z
+==>60
+{% endhighlight %}
+
+This ability to do "multiple assignment":http://groovy.codehaus.org/Multiple+Assignment ends up presenting opportunity for some nice Gremlin usage with respect to the use of the @path@ step:
+
+{% highlight text %}
+gremlin> g = TinkerGraphFactory.createTinkerGraph()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> g.v(1).outE.inV.path.collect{it[0].name + ":" + it[1].weight + ":" + it[2].name} 
+==>marko:0.5:vadas
+==>marko:1.0:josh
+==>marko:0.4:lop 
+{% endhighlight %}
+
+In the above code, we traverse out from @g.v(1)@ and then grab the path.  The path is a @List@ of the elements that made up the traversal.  In this case, the item in the first postion is @g.v(1)@, the item in the second position is the out edge and item in the third position is the in-vertex.  As the path is a @List@, we must reference the items in it by index.  It works, but is a bit difficult to read.  The alternative is to destructure the list into variables:
+
+{% highlight text %}
+gremlin> g.v(1).outE.inV.path.collect{marko,outE,inV->"${marko.name}:${outE.weight}:${inV.name}"}        
+==>marko:0.5:vadas
+==>marko:1.0:josh
+==>marko:0.4:lop
+{% endhighlight %}
+
+With named variables for the items in the path, the intent of the @collect@ closure can be more clearly understood at a glance.  While "multiple assignment" has a nice use case with the Gremlin @path@ step, it is quite useful for other tasks where accessing objects in a list by position can get overly-complicated.
+
