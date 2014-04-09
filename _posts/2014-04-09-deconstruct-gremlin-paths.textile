@@ -3,7 +3,7 @@ title: Deconstruct Gremlin Paths
 layout: post
 ---
 
-I mentioned to someone recently that to be great at "Gremlin":http://gremlin.tinkerpop.com, you have to be great at "Groovy":http://groovy.codehaus.org.  There is just too much syntactic sugar and shorthand in Groovy to just ignore.  One such bit of Groovy goodness lies in its ability to destructure lists into variables:
+I mentioned to someone recently that to be great at "Gremlin":http://gremlin.tinkerpop.com, you have to be great at "Groovy":http://groovy.codehaus.org.  There is just too much syntactic sugar and shorthand in Groovy to just ignore.  In my previous post, I demonstrated the "use of collate":http://stephen.genoprime.com/2014/02/28/use-collate-to-batch-gremlin-results.html in batching Gremlin results.  In this post, I present another bit of Groovy goodness in relation to Gremlin and it lies in Groovy's ability to destructure lists into variables:
  
 {% highlight text %}
 gremlin> (x,y,z) = [10,20,30]
