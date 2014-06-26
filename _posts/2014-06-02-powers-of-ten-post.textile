@@ -1,0 +1,10 @@
+---
+title: Article - Powers of Ten Series
+layout: post
+---
+
+One of the most common questions that people seem to have when getting started with graph databases is how to best load their data.  As is the case with most technological things, a one size fits all answer isn't really applicable.  While there are some general patterns that can be followed, there are definitely different strategies to apply depending on the size of the data.
+
+To identify the common patterns and address the different strategies at different sizes issue, I worked with "Daniel Kuppitz":https://twitter.com/dkuppitz to author the _Powers of Ten_ series, a two part article on bulk loading data into the "Titan":titan.thinkaurelius.com graph database.  "Part I":http://thinkaurelius.com/2014/05/29/powers-of-ten-part-i/ of the series focused on datasets that contained millions to tens of millions of edges and "Part II":http://thinkaurelius.com/2014/06/02/powers-of-ten-part-ii/ focused on hundreds of millions of edges to billions.
+
+I think that these posts are very useful resources for those getting started with Titan.
