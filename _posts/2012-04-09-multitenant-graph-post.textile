@@ -1,6 +1,0 @@
----
-title: Blog Post - Multitenant Graph Applications
-layout: post
----
-
-I co-authored this "blog post":http://thinkaurelius.com/2012/04/06/multitenant-graph-applications/ on multitenancy in systems backed by graph databases.  Multitenancy is actually easily achieved using TinkerPop Blueprints (as of version 1.2) and its "PartitionGraph":https://github.com/tinkerpop/blueprints/wiki/Partition-Implementation graph wrapper.  The running example we used follows the healthcare industry, specifically a multitenant EHR.

@@ -1,6 +1,0 @@
----
-title: Article - Polyglot Persistence and Query with Gremlin
-layout: post
----
-
-On a recent trip, where I hung around with "Marko Rodriguez":http://http://markorodriguez.com/, we came to a realization that "Gremlin":http://gremlin.tinkerpop.com has a wider applicability than often thought of.  Gremlin can be used in a variety of ways to work with disparate data sources that center around graphs.  From those thoughts, this blog post, "Polyglot Persistence and Query with Gremlin":http://thinkaurelius.com/2013/02/04/polyglot-persistence-and-query-with-gremlin/, was written.
