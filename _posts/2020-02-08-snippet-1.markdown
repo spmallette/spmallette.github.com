@@ -1,0 +1,112 @@
+---
+layout: snippet-post
+title:  "A Nulled Union"
+date:   2020-02-08
+categories: snippet
+graph: modern
+---
+
+{% highlight groovy %}
+g.V().coalesce(values('age'), constant(null)).
+  map(choose(is(null), 
+             union(identity(), constant('nulled')).fold(), 
+             union(identity(), constant('not nulled')).fold()))
+{% endhighlight %}
+
+This Gremlin traversal was contrived to demonstrate the behavior of the use of `null`, when encountered by `choose()`. Recall that `choose()`-step is utilized in situations where we wish to indicate a form of if-then or switch style operation. The most simple form of which would be something like:
+
+{% highlight plaintext %}
+g.V().choose(<condition>, <then>)
+{% endhighlight %}
+
+or with an additional argument to form if-then-else:
+
+{% highlight plaintext %}
+g.V().choose(<condition>,<then>,<else>)
+{% endhighlight %}
+
+As a working example:
+
+{% highlight plaintext %}
+gremlin> g.V().choose(has('age'),constant('person'))
+==>person
+==>person
+==>v[3]
+==>person
+==>v[5]
+==>person
+gremlin> g.V().choose(has('age'),constant('person'),constant('software'))
+==>person
+==>person
+==>software
+==>person
+==>software
+==>person
+{% endhighlight %}
+
+Note that in the if-then example, there is no “else” option and therefore the vertex passes through the `choose()` unchanged. 
+
+In TinkerPop 3.5.0, `null` has new semantics within Gremlin traversals. Where it formerly acted as a filter, it now preserves itself as a traverser which means that we can reason upon it in traversal steps. To examine the behavior of `null` in relation to `choose()`, we first need to introduce some nulls into the traversal somehow as the “modern” graph does not have such data. 
+
+{% highlight plaintext %}
+gremlin> g.V().coalesce(values('age'), constant(null))
+==>29
+==>27
+==>null
+==>32
+==>null
+==>35
+{% endhighlight %}
+
+The `coalesce()` step uses the first result from the first traversal argument provided to it that returns a result. Therefore, if `values(‘age’)` gets the “age” property from the vertex then `coalesce()` return that. If it has no result (i.e. that property key is not on a particular vertex) then `coalesce()` will try the result of `constant(null)` which simply always return `null` and thus guarantees a result from `coalesce()`.
+
+Now that there are some nulls to test `choose()` with, we can write a fairly recognizable “isNull()” sort of statement in Gremlin using `choose()`.
+
+{% highlight plaintext %}
+gremlin> g.V().coalesce(values('age'), constant(null)).
+......1>   choose(is(null), constant('null'), constant('not null'))
+==>not null
+==>not null
+==>null
+==>null
+==>not null
+==>not null
+{% endhighlight %}
+
+We can now see the behavior of `null` in `choose()` and that it appears to be “right” in that given the “modern” toy graph there should be two “software” vertices without an “age” key and thus two “nulled” results with the rest being “person” vertices and thus “not nulled”.
+
+We would like to be more certain though about these results. Let’s actually display the “age” along with the “null” or “not nulled” constant. While there are a myriad of ways to approach this, we could simply `union()` the value of the “age” and the `constant()` text.
+
+{% highlight plaintext %}
+gremlin> g.V().coalesce(values('age'), constant(null)).
+......1>   map(choose(is(null), 
+......2>              union(identity(), constant('nulled')).fold(), 
+......3>              union(identity(), constant('not nulled')).fold()))
+==>[29,not nulled]
+==>[27,not nulled]
+==>[null,nulled]
+==>[null,nulled]
+==>[32,not nulled]
+==>[35,not nulled]
+{% endhighlight %}
+
+As we can see, the results of our test of `choose()` and `null` are easier to confirm now, however it is worth looking more closely at those second and third arguments to `choose()`. For purposes of discussion they are basically identical save for the `String` given to `constant()` so let’s just consider:
+
+{% highlight plaintext %}
+union(identity(), constant('nulled')).fold()
+{% endhighlight %}
+
+The ultimate goal here was to “somehow” include the value of “age” with the value of the `constant()` to verify that the right `constant()` matched to the right value of “age”. From the result above it’s clear that the approach to “somehow” was to create a List where the first item in the list was the “age” value and the second was the `constant()` value. The `union()` step merges the traversal streams given to it which helps form the basis for this `List`. In that `union()` the first argument is `identity()` which refers to the value of the “age” and is the current traverser (i.e. `identity()` returns itself). `constant()` is the second argument and simply returns its argument. Keeping in mind `union()` simply merges streams we need a way to iterate that `union()` and form its contents into a List. We can do that with `fold()`. 
+
+Finally, there might have been temptation to originally write this traversal without `map()`, like:
+
+{% highlight plaintext %}
+gremlin> g.V().coalesce(values('age'), constant(null)).
+......1>   choose(is(null), 
+......2>          union(identity(), constant('nulled')).fold(), 
+......3>          union(identity(), constant('not nulled')).fold())
+==>[null,null,nulled,nulled]
+==>[29,not nulled,27,not nulled,32,not nulled,35,not nulled]
+{% endhighlight %}
+
+but we can where that falls short. We want the `choose()` to form a `List` for each traverser that was produced by `coalesce()`, not `fold()` together all “null” values and all “not null” values into `List` items. The `map()` forces the transform to happen independently for each “age”.

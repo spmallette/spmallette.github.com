@@ -1,0 +1,78 @@
+---
+layout: snippet-post
+title:  "constant() Is Not inject()"
+date:   2020-02-15
+categories: snippet
+graph: modern
+---
+
+The `constant()` step looks a bit like `inject()`. Both look like they take some arbitrary “constant” sort of value and “inject” it into the traversal stream. 
+
+{% highlight plaintext %}
+gremlin> g.inject(1)
+==>1
+gremlin> g.V().has('person','name','marko').constant('c')
+==>c
+{% endhighlight %}
+
+It might beg the question as to why `inject()` is both a start step and traversal step while `constant()` is simply the latter. On closer inspection we can see that while similar in function, the two steps play completely different roles. 
+
+In the case of `constant()`, it is a `map()` step, in the sense that whatever traverser comes into `constant()` will be transformed to the specified value regardless of what that traverser originally contained. In the previous example, a Vertex became the `String` value of “c”. In the following examples we can see other basic transformations:
+
+{% highlight plaintext %}
+gremlin> g.V().has('person','name',within('josh','marko')).constant('c')
+==>c
+==>c
+gremlin> g.V().has('person','name',within('josh','marko')).fold().constant('c')
+==>c
+{% endhighlight %}
+
+In the first traversal line above, there are two vertices returned and therefore each is mapped to “c”. In the second traversal line, those two vertices are reduced to a `List` with `fold()` and therefore there is only one traverser containing those two elements. As a result, there is a single `List` to transform and therefore a single “c” as the output.
+
+The behavior of `inject()` is quite different in that its purpose is not to transform the incoming traverser as a `map()` step but to insert the additional specified objects into the stream with that incoming traverser. Given that `inject()` places objects into the stream, it is fitting that it live alongside `V()` and `E()` as start steps as they themselves places objects into the traversal stream to start it. The behavior of `inject()` is obvious as a start step:
+
+{% highlight plaintext %}
+gremlin> g.inject(1, 2, 3)
+==>1
+==>2
+==>3
+{% endhighlight %}
+
+It is more nuanced when used mid-traversal as a standard traversal step:
+
+{% highlight plaintext %}
+gremlin> g.V().has('person','name','marko').inject('i')
+==>i
+==>v[1]
+gremlin> g.V().has('person','name',within('josh','marko')).inject('i')
+==>i
+==>v[1]
+==>v[4]
+gremlin> g.V().has('person','name',within('josh','marko')).inject('i1', 'i2')
+==>i1
+==>i2
+==>v[1]
+==>v[4]
+{% endhighlight %}
+
+Note that `inject()` behaves as though it is called once and not called once per traverser as we saw with `constant()`. Even when `inject()` is induced from within a `map()` as a child traversal it exhausts itself and then produces no additional items to the stream as shown in the following bit of Gremlin:
+
+{% highlight plaintext %}
+gremlin> g.V().has('person','name',within('josh','marko')).map(inject('i').fold())
+==>[v[1],i]
+==>[v[4]]
+{% endhighlight %}
+
+If we wanted that behavior we’d likely prefer the use of `constant()` (with `union()`):
+
+{% highlight plaintext %}
+gremlin> g.V().has('person','name',within('josh','marko')).
+......1>   map(union(identity(),constant('c')).fold())
+==>[v[1],c]
+==>[v[4],c]
+{% endhighlight %}
+
+
+
+
+

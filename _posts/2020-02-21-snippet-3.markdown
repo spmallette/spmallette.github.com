@@ -1,0 +1,58 @@
+---
+layout: snippet-post
+title:  "WTF - What the fold()"
+date:   2020-02-21
+categories: snippet
+graph: modern
+---
+
+Many advanced and even intermediate-level Gremlin examples are peppered with the use of the `fold()` step and the related `unfold()` step. As a reminder, `fold()` gathers all elements in the stream to that point and reduces them to a `List` and `unfold()` does the opposite, taking a `List` and unrolling it to its individual items and placing each back in the stream:
+
+{% highlight plaintext %}
+gremlin> g.V().has('person','name','marko').out().fold()
+==>[v[3],v[2],v[4]]
+gremlin> g.V().has('person','name','marko').out().fold().unfold()
+==>v[3]
+==>v[2]
+==>v[4]
+{% endhighlight %}
+
+While the above sort of usage tends to present an obvious example, we typically see `fold()` tucked away in `by()` modulators where its usage appears more enigmatic:
+
+{% highlight plaintext %}
+gremlin> g.V().has('person','name','marko').
+......1>   project('name','knows').
+......2>     by('name').
+......3>     by(out('knows').values('name').fold())
+==>[name:marko,knows:[vadas,josh]]
+{% endhighlight %}
+
+The above bit of Gremlin takes the “marko” vertex and converts it to a `Map` with `project()` where that `Map` will have two keys: “name” and “knows”. The value of the key is determined by the order oriented `by()` modulators that follow. The first grabs the “name” property value from the “marko” vertex and the second `by()` modulator executes a traversal using the “marko” vertex as the starting point. Specifically, it traverses outgoing “knows” edges and gets the “name” value from the adjacent vertices. Finally, it uses `fold()` to reduce that stream of “name” values to a `List` that becomes the value supplied to the “knows” key in the `project()`-step's returned `Map`.
+
+While this is the correct way to write this sort of traversal, the immediate inclination is to assume that the above traversal could be written as:
+
+{% highlight plaintext %}
+gremlin> g.V().has('person','name','marko').
+......1>   project('name','knows').
+......2>     by('name').
+......3>     by(out('knows').values('name'))
+==>[name:marko,knows:vadas]
+{% endhighlight %}
+
+We can see that without `fold()` the `by()` modulator only gathers the first item in the stream to add to the “knows” key which for our purposes is not the desired outcome. It is important to remember that `by()` behaves just like `map()` in the sense that it is essentially treats the child traversal as a single transformative function call (`filter()` behaves in the same fashion and therefore Gremlin is consistent in this sort of semantics). Another way to think about these semantics is to envision `by()` as only calling `next()` on the traversal one time to get its result. 
+
+{% highlight plaintext %}
+gremlin> g.V().has('person','name','marko').map(out().values('name'))
+==>lop
+gremlin> g.V().has('person','name','marko').map(out().values('name').fold())
+==>[lop,vadas,josh]
+gremlin> g.V().has('person','name','marko').flatMap(out().values('name'))
+==>lop
+==>vadas
+==>josh
+{% endhighlight %}
+
+Given this behavior, it is important to include some form of reducing step to `by()` unless of course, there is only a desire for the first stream result which is sometimes the case. The `fold()` step is a most typical reducer, but `count()`, `sum()`, etc. all exhaust the stream into a single value and therefore also make for good examples of these semantics.
+
+
+
