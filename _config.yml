@@ -20,6 +20,7 @@ baseurl: ""
 url: "http://stephen.genoprime.com" 
 twitter_username: spmallette
 github_username:  spmallette
+google_analytics: UA-22004389-1
 
 # Build settings
 markdown: kramdown
