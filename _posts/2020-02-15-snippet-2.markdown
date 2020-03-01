@@ -4,6 +4,7 @@ title:  "constant() Is Not inject()"
 date:   2020-02-15
 categories: snippet
 graph: modern
+version: 3.4.6
 ---
 
 The `constant()` step looks a bit like `inject()`. Both look like they take some arbitrary “constant” sort of value and “inject” it into the traversal stream. 

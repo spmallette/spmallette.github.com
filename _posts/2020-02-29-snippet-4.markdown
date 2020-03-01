@@ -1,0 +1,127 @@
+---
+layout: snippet-post
+title:  "Static and Dynamic Map Instances"
+date:   2020-02-29
+categories: snippet
+version: 3.4.6
+---
+
+This is an interesting piece of Gremlin:
+
+{% highlight plaintext %}
+gremlin> g.inject(0).project('x')
+==>[x:0]
+{% endhighlight %}
+
+It creates a `Map` from an injected value by passing it to `project()` with a single key. It's interesting because it provides a way to dynamically construct a `Map` using a specified value and key within Gremlin. While it is equally possible to do the following:
+
+{% highlight plaintext %}
+gremlin> g.inject([x:0])
+==>[x:0]
+{% endhighlight %}
+
+to achieve the same end, I think that the `project()` case demonstrates a difference worth examining a bit using a more advanced example with `constant()`. First, note that we can see the same sort of `Map` creation using that step:
+
+{% highlight plaintext %}
+gremlin> g.V().constant(0).project('x')
+==>[x:0]
+==>[x:0]
+==>[x:0]
+==>[x:0]
+==>[x:0]
+==>[x:0]
+{% endhighlight %}
+
+and the same result can be achieved with a static `Map` supplied as a `constant()`:
+
+{% highlight plaintext %}
+gremlin> g.V().constant([x:0])
+==>[x:0]
+==>[x:0]
+==>[x:0]
+==>[x:0]
+==>[x:0]
+==>[x:0]
+{% endhighlight %}
+
+There is a subtle difference however:
+
+{% highlight plaintext %}
+gremlin> x = g.V().constant(0).project('x').toList()
+==>[x:0]
+==>[x:0]
+==>[x:0]
+==>[x:0]
+==>[x:0]
+==>[x:0]
+gremlin> x[0].is(x[1])
+==>false
+gremlin> x = g.V().constant([x:0]).toList()
+==>[x:0]
+==>[x:0]
+==>[x:0]
+==>[x:0]
+==>[x:0]
+==>[x:0]
+gremlin> x[0].is(x[1])
+==>true
+{% endhighlight %}
+
+The use of `constant([x:0])` supplies the same `Map` instance for each `Vertex` traverser that passes to it, where as the use of `constant(0).project('x')` creates a new `Map` for each traverser. We might wonder the effect such equality would have on a traveral. Interestingly, `profile()` should similar results for bulking operations:
+
+{% highlight plaintext %}
+gremlin> g.V().constant([x:0]).barrier().profile()
+==>Traversal Metrics
+Step                                                               Count  Traversers       Time (ms)    % Dur
+=============================================================================================================
+TinkerGraphStep(vertex,[])                                             6           6           0.108    40.66
+ConstantStep({x=0})                                                    6           6           0.062    23.44
+NoOpBarrierStep                                                        6           1           0.095    35.90
+                                            >TOTAL                     -           -           0.266        -
+gremlin> g.V().constant(0).project('x').barrier().profile()
+==>Traversal Metrics
+Step                                                               Count  Traversers       Time (ms)    % Dur
+=============================================================================================================
+TinkerGraphStep(vertex,[])                                             6           6           0.083    32.79
+ConstantStep(0)                                                        6           6           0.038    15.01
+ProjectStep([x])                                                       6           6           0.047    18.95
+NoOpBarrierStep                                                        6           1           0.084    33.25
+                                            >TOTAL                     -           -           0.253        -
+{% endhighlight %}
+
+Note that the `barrier()` reduces the traverser count to one in both cases. It appears that `Map` equality is based on the contents for bulking purposes. Using the same object (i.e. `constant()`) rather than allocating new ones (i.e. `constant(0).project('x')`) seems to have no direct difference in traversal operation apart from adding more items to the heap for garbage collection in the latter case. Since there are no Gremlin steps that can directly modify the `Map` instance, there don't appear to even be situations where modifications of the same `Map` might cause problems. All anyone could do is `unfold()` the `Map` to entries, merge in new ones, and then create a new `Map` object from that as shown here:
+
+{% highlight plaintext %}
+gremlin> g = TinkerFactory.createModern().traversal()
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> g.V().map(union(constant([x:0]),elementMap()).
+......1>           unfold().
+......2>           group().by(select(keys)).by(select(values)))
+==>[x:0,name:marko,label:person,id:1,age:29]
+==>[x:0,name:vadas,label:person,id:2,age:27]
+==>[x:0,name:lop,label:software,id:3,lang:java]
+==>[x:0,name:josh,label:person,id:4,age:32]
+==>[x:0,name:ripple,label:software,id:5,lang:java]
+==>[x:0,name:peter,label:person,id:6,age:35]
+{% endhighlight %}
+
+The `constant().project()` approach seems to only have some usage where the value is dynamic, but it seems to point out a missing aspect of Gremlin. Specifically, Gremlin lacks the means to dynamically generate values within the traversal. Imagine doing a remote traversal where it was desired to do a server side timestamp. There really is no option in that case. The `constant()`-step does not help for this purpose as whatever value is provided to it will be resolved on the client prior to Gremlin bytecode generation and then sent as a static value to the server. A missing component here is the ability to do:
+
+{% highlight groovy %}
+g.addV().property('timestamp', TimeStamp.current())
+{% endhighlight %}
+
+in which case, the use of `project()` might have some desireable usage:
+
+{% highlight groovy %}
+g.V().map(union(project('timestamp').by(TimeStamp.current()),elementMap()).
+                unfold().
+                group().by(select(keys)).by(select(values)))
+{% endhighlight %}
+
+Perhaps a feature like that will be available in future versions of Gremlin.
+
+
+
+
+

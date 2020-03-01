@@ -4,6 +4,7 @@ title:  "WTF - What the fold()"
 date:   2020-02-21
 categories: snippet
 graph: modern
+version: 3.4.6
 ---
 
 Many advanced and even intermediate-level Gremlin examples are peppered with the use of the `fold()` step and the related `unfold()` step. As a reminder, `fold()` gathers all elements in the stream to that point and reduces them to a `List` and `unfold()` does the opposite, taking a `List` and unrolling it to its individual items and placing each back in the stream:
