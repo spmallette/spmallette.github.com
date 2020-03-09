@@ -1,0 +1,42 @@
+---
+layout: snippet-post
+title:  "Maps as Keys"
+date:   2020-03-07
+categories: snippet
+graph: modern
+version: 3.4.6
+---
+
+Gremlin can generate `Map` instances that have keys that are themselves of type `Map`. This situation is often encountered when doing a `groupCount()` using a graph element like `Vertex` and then converting that `Vertex` to a `Map`:
+
+{% highlight plaintext %}
+gremlin> g.V().both().groupCount()
+==>[v[1]:3,v[2]:1,v[3]:3,v[4]:3,v[5]:1,v[6]:1]
+gremlin> g.V().both().groupCount().by(elementMap()).unfold()
+==>{id=5, label=software, name=ripple, lang=java}=1
+==>{id=2, label=person, name=vadas, age=27}=1
+==>{id=4, label=person, name=josh, age=32}=3
+==>{id=3, label=software, name=lop, lang=java}=3
+==>{id=1, label=person, name=marko, age=29}=3
+==>{id=6, label=person, name=peter, age=35}=1
+{% endhighlight %}
+
+Unfortunately, not every programming language allows a `Map` to have such a key and, as a result, a traversal that works perfectly well in the Gremlin Console (using Groovy) ends up not working in another programming language despite the Gremlin being identical. Python is one such language that has this limitation. In Python a `dict` can only have a key that is a hashable type and `dict` itself is not. As a result a `TypeError` occurs in Python when trying to execute that previous traversal. 
+
+Luckily, Gremlin is a flexible language with many steps that can help you [manipulate collections][recipes]. It merely takes a bit of creativity to solve the problem. For Python and this particular case, we just need to transform the result to something that Python can handle - a `list` of `list`:
+
+{% highlight plaintext %}
+gremlin> g.V().both().elementMap().groupCount().
+......1>   unfold().
+......2>   map(union(select(keys),select(values)).fold())
+==>[[id:5,label:software,name:ripple,lang:java],1]
+==>[[id:2,label:person,name:vadas,age:27],1]
+==>[[id:4,label:person,name:josh,age:32],3]
+==>[[id:3,label:software,name:lop,lang:java],3]
+==>[[id:1,label:person,name:marko,age:29],3]
+==>[[id:6,label:person,name:peter,age:35],1]
+{% endhighlight %}
+
+In the above case, we convert each `Map` into a `List` by way of `union()` where we grab the `keys` for the first item in the `List` and the `values` for the second item in the `List`, basically creating a list of pairs. This case was only meant to be an example and other solutions abound. The point is that there are times where you may need to reformulate your result to meet the needs of your host language. Gremlin makes doing that quite straightforward.
+
+[recipes]: https://tinkerpop.apache.org/docs/current/recipes/#collections
