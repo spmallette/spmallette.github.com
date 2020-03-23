@@ -1,0 +1,103 @@
+---
+layout: snippet-post
+title:  "Grouping Edge Directions"
+date:   2020-03-21
+categories: snippet
+version: 3.4.6
+---
+
+The following dataset represents text messages being sent among a group of "person" vertices:
+
+{% highlight groovy %}
+g.addV('person').property('name', 'marko').as('a').
+  addV('person').property('name', 'vadas').as('b').
+  addV('person').property('name', 'josh').as('c').
+  addV('person').property('name', 'peter').as('d').
+  addV('person').property('name', 'daniel').as('e').
+  addE('text').property('count', 10).from('a').to('b').
+  addE('text').property('count', 12).from('a').to('b').
+  addE('text').property('count', 20).from('a').to('e').
+  addE('text').property('count', 25).from('b').to('a').
+  addE('text').property('count', 30).from('d').to('a').
+  addE('text').property('count', 25).from('d').to('a').
+  addE('text').property('count', 10).from('e').to('c')
+{% endhighlight %}
+
+We might become interested in doing some sort of analysis that answered the question of "Who does 'marko' send messages to and receive messages from and how many of those messages are there per person?" The start to such a traversal surely involves finding "marko", traversing incoming and outgoing edges, and then grouping on the "person" vertices to which "marko" is connected:
+
+{% highlight plaintext %}
+gremlin> g.V().has('person','name','marko').
+......1>   bothE().
+......2>   group().
+......3>     by(otherV().values('name')).next()
+==>daniel=[e[12][0-text->8]]
+==>peter=[e[14][6-text->0], e[15][6-text->0]]
+==>vadas=[e[10][0-text->2], e[11][0-text->2], e[13][2-text->0]]
+{% endhighlight %}
+
+The structure of the result is beginning to form itself as we can see the names of the people who send and receive messages to and from "marko", but an important step remains. The values in that `Map` are lists of `Edge` objects and need to be converted to a form that explains the number of messages sent and received for each person. That value would be best represented as a `Map` within "sent" and "received" keys where their values represented the total number of messages. 
+
+While the first `by()` modulator to `group()`-step defines the value on which the grouping should occur (i.e. the key to the `Map`), the second `by()` modulator describes how to process the resultant values in the `Map`. As a quick demonstration, the following code demonstrates how the second `by()` will extract the "count" for each edge:
+
+{% highlight plaintext %}
+gremlin> g.V().has('person','name','marko').
+......1>   bothE().
+......2>   group().
+......3>     by(otherV().values('name')).
+......4>     by('count')
+==>[daniel:[20],peter:[25,30],vadas:[10,12,25]]
+{% endhighlight %}
+
+Going back to the original purpose of our analysis, we can see that while these numbers could provide us with the "total number of messages sent and received per person" we can't use them as-is to determine how many were sent and how many were received as we need to utlize the direction of the edge to figure that out. Since we want to reduce this `Edge` list into a `Map` with "sent" and "received" keys, it would be good to use `project()`. This step is helpful when we know the names of the keys ahead of time and want to push values into them.
+
+{% highlight plaintext %}
+gremlin> g.V().has('person','name','marko').
+......1>   bothE().
+......2>   group().
+......3>     by(otherV().values('name')).
+......4>     by(project('sent','received').fold()).next()
+==>daniel=[{sent=e[29][17-text->25], received=e[29][17-text->25]}]
+==>peter=[{sent=e[32][23-text->17], received=e[32][23-text->17]}, {sent=e[31][23-text->17], received=e[31][23-text->17]}]
+==>vadas=[{sent=e[27][17-text->19], received=e[27][17-text->19]}, {sent=e[28][17-text->19], received=e[28][17-text->19]}, {sent=e[30][19-text->17], received=e[30][19-text->17]}]
+{% endhighlight %}
+
+The above demonstrates the basic `Map` structure we want to have, but it doesn't sort out which edge represents "sent" and which are "received". Those edges need to be filtered accordingly for each `Map` pair. One way to do this is with `coalesce()`:
+
+{% highlight plaintext %}
+gremlin> g.V().has('person','name','marko').
+......1>   bothE().
+......2>   group().
+......3>     by(otherV().values('name')).
+......4>     by(project('sent','received').
+......5>          by(coalesce(filter(outV().has('name','marko')).values('count'), constant(0))).
+......6>          by(coalesce(filter(inV().has('name','marko')).values('count'), constant(0))).
+......7>        fold()).next()
+==>daniel=[{sent=20, received=0}]
+==>peter=[{sent=0, received=25}, {sent=0, received=30}]
+==>vadas=[{sent=10, received=0}, {sent=12, received=0}, {sent=0, received=25}]
+{% endhighlight %}
+
+Note in the above bit of Gremlin that we use the `inV()` and `outV()` of each `Edge` instance to determine directionality. If the `outV()` (i.e. the outgoing `Vertex` of the `Edge`) is "marko" then we know he was the sender of the message and the reverse is true for `inV()` (i.e. the incoming `Vertex` of the `Edge`). Since any given `Edge` can only be one of "sent" or "received" but not "both" then one of those `by()` modulators would have to return no elements. By using `coalesce()` and a `constant(0)` to represent that condition we first prevent a traversal error and second provide a numeric value of zero as a default which makes the next step of summation of all these `Map` instances quite straightforward:
+
+{% highlight plaintext %}
+gremlin> g.V().has('person','name','marko').
+......1>   bothE().
+......2>   group().
+......3>     by(otherV().values('name')).
+......4>     by(project('sent','received').
+......5>          by(coalesce(filter(outV().has('name','marko')).values('count'), constant(0))).
+......6>          by(coalesce(filter(inV().has('name','marko')).values('count'), constant(0))).
+......7>        unfold().
+......8>        group().
+......9>          by(keys).
+.....10>          by(select(values).sum())).next()
+==>daniel={received=0, sent=20}
+==>peter={received=55, sent=0}
+==>vadas={received=25, sent=22}
+{% endhighlight %}
+
+Each `Map` is [deconstructed][recipes] to key/value pairs by `unfold()` and is then reconstructed with `group()` and the values reduced by way of `sum()`. This approach is a common pattern in collection manipulation and should be recgonizable to more advanced Gremlin users. 
+
+[recipes]: https://tinkerpop.apache.org/docs/current/recipes/#collections
+
+
