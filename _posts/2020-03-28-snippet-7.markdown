@@ -1,0 +1,123 @@
+---
+layout: snippet-post
+title:  "Inserting a Vertex Using a Map"
+date:   2020-03-28
+categories: snippet
+version: 3.4.6
+---
+
+The typical method for setting properties on a graph element, such as a `Vertex`, is to use the `property()`-step. This step looks a bit like the `put()` method of a Java `Map` which takes a key and a value as its argument (though `property()` can optionally take additional arguments for `Cardinality` and meta-properties). It's fitting that these APIs are similar since an `Element` essentially holds a `Map` of properties. Setting key and value pairs for one of these objects looks quite like the other:
+
+{% highlight java %}
+Map<String,Object> m = new HashMap<String,Object>();
+m.put("name", "marko");
+m.put("age", 29);
+m.put("country", "usa");
+
+Vertex v = g.addV("person").
+             property("name", "marko").
+             property("age", 29).
+             property("country", "usa").next();
+{% endhighlight %}
+
+Given the prevalence of `Map` usage when programming and the analagous sort of structure that it has to an `Element`, there may be situations where it would be helpful to use the contents of `Map` to update an `Element`. The most obvious and brute force approach would be to iterate the pairs of the `Map` and call `property()` on the `GraphTraversal` for each:
+
+{% highlight java %}
+Map<String,Object> m = new HashMap<String,Object>();
+m.put("name", "marko");
+m.put("age", 29);
+m.put("country", "usa");
+
+GraphTraversal<Vertex,Vertex> t = g.addV("person");
+m.forEach((k,v) -> t.property(k,v));
+Vertex v = t.next();
+{% endhighlight %}
+
+On the other hand, it is possible to do this as Gremlin. To demonstate we will switch to the Gremlin Console and Groovy where the same `Map` is constructed as:
+
+{% highlight text %}
+gremlin> m = [name:'marko',age:29,country:'usa']
+==>name=marko
+==>age=29
+==>country=usa
+{% endhighlight %}
+
+We can introduce "m" as a side-effect and then reference it in the traversal:
+
+{% highlight text %}
+gremlin> g.withSideEffect('properties',m).
+......1>   addV('person').as('vertex').
+......2>   sideEffect(select('properties').
+......3>              unfold().as('kv').
+......4>              select('vertex').
+......5>              property(select('kv').by(Column.keys), select('kv').by(Column.values)))
+==>v[0]
+gremlin> g.V().has('person','name','marko').elementMap()
+==>[id:0,label:person,country:usa,name:marko,age:29]
+{% endhighlight %}
+
+We use `sideEffect()` at line 2 to treat the update of the properties of the newly added "person" vertex as something separate from what we want to have as the result. Without `sideEffect()` the inserted vertex would be returned once for each property that was updated. 
+
+If you are good with collection manipulation in Gremlin, you should be able to see how to extend upon this pattern to insert batches of vertices using a `List` of `Map` objects:
+
+{% highlight text %}
+gremlin> l = [[name:'marko',age:29,country:'usa'],
+......1>      [name:'josh',age:32,country:'usa'],
+......2>      [name:'vadas',age:27,country:'usa']]
+==>[name:marko,age:29,country:usa]
+==>[name:josh,age:32,country:usa]
+==>[name:vadas,age:27,country:usa]
+gremlin> g.inject(l).
+......1>   unfold().as('properties').
+......2>   addV('person').as('vertex').
+......3>   sideEffect(select('properties').
+......4>              unfold().as('kv').
+......5>              select('vertex').
+......6>              property(select('kv').by(Column.keys), select('kv').by(Column.values)))
+==>v[0]
+==>v[4]
+==>v[8]
+gremlin> g.V().elementMap()
+==>[id:0,label:person,country:usa,name:marko,age:29]
+==>[id:4,label:person,country:usa,name:josh,age:32]
+==>[id:8,label:person,country:usa,name:vadas,age:27]
+{% endhighlight %}
+
+In this case, we use `inject()` to start the traversal by giving it a `List` of `Map` objects. We immediately `unfold()` that `List` to individual `Map` objects in the stream so that `addV()` and its follow-on steps are called once per `Map` object (i.e. each `Map` corresponds to one newly added `Vertex`). The rest of the traversal stays the same.
+
+There is a bit of complexity to this Gremlin that makes readability difficult. Combine the readabiilty issue with what might be considered a common operation and there is likely a candidate for an improvement to Gremlin syntax. While Gremlin does not yet provide a better way to update an `Element` with a `Map`, it would be quite possible to develop a [custom DSL step][1] to at least improve readability to some degree. Perhaps, that DSL step would be called `propertyAll()` which follows the naming of `putAll()` on a Java `Map`:
+
+{% highlight text %}
+gremlin> g.inject(l).
+......1>   unfold().as('properties').
+......2>   addV('person').as('vertex').
+......3>   propertyAll('properties', 'vertex')
+==>v[0]
+==>v[4]
+==>v[8]
+{% endhighlight %}
+
+That `propertyAll()`-step would simply accept two arguments where the first would be a step label that referenced a `Map` and the second would be a step label that referened the `Element` to call `property()` on. On the other hand, with a new DSL step, we might consider forgetting this entire approach using step labels and side-effects and simply go back to the brute force approach where we started and define the DSL step as:
+
+{% highlight java %}
+@GremlinDsl.AnonymousMethod(returnTypeParameters = {"A", "A"}, methodTypeParameters = {"A"})
+public default GraphTraversal<S, E> propertyAll(java.util.Map<String,Object> properties) {
+    properties.forEach((k,v) -> property(k,v));
+    return this;
+}
+{% endhighlight %}
+
+which would provide a highly readable bit of Gremlin:
+
+{% highlight text %}
+gremlin> m = [name:'marko',age:29,country:'usa']
+==>name=marko
+==>age=29
+==>country=usa
+gremlin> g.addV('person').propertyAll(m)
+==>v[0]
+{% endhighlight %}
+
+Perhaps Gremlin should natively support `Map` for this particular use case better than it currently does. Of course, I think I'd like to consider it in more general terms than being just bound to `Element` manipulation and I'd wonder what compromises would have to be made for multi/meta-properties as a result of such an addition.
+
+[1]:https://tinkerpop.apache.org/docs/current/reference/#dsl 
