@@ -1,0 +1,147 @@
+---
+layout: snippet-post
+title:  "Restricting simplePath()"
+date:   2020-04-24
+categories: snippet
+graph: modern
+version: 3.4.6
+---
+
+Graph data structures can contain cycles where a path loops back on itself sending Gremlin running in circles around vertices and edges indefinitely. This issue represents the main reason why we recommend that all `repeat()`-step usage contain some sort of termination condition even if you're completely sure that your data is without cycles. It just takes one edge of bad data that isn't expected to send Gremlin on a never ending walk of the graph. Therefore, we'd prefer the second traversal below as opposed to the first:
+
+{% highlight groovy %}
+g.V().repeat(out())
+
+g.V().repeat(out()).times(100)
+{% endhighlight %}
+
+Another defense against cycles is to filter them out. The `simplePath()`-step removes any paths that Gremlin has visted previously:
+
+{% highlight text %}
+gremlin> g.V(1).both().both()
+==>v[1]
+==>v[4]
+==>v[6]
+==>v[1]
+==>v[5]
+==>v[3]
+==>v[1]
+gremlin> g.V(1).both().both().simplePath()
+==>v[4]
+==>v[6]
+==>v[5]
+==>v[3]
+{% endhighlight %}
+
+The use of `simplePath()` seems to be fairly well known for Gremlin users, but there are aspects of it that may be less well known, as it is typically seen in examples either by itself as shown above or with a basic `by()` modulation. There are situations where `simplePath()` can be a bit greedy and consider more of the path traversed than you might want. A good example of this situation was discussed recently on the [gremlin-users mailing list][1]. In this case, there was an attempt to do an edge addition followed by a check of the graph for a cyclic path on the basis of that graph mutation:
+
+{% highlight text %}
+gremlin> g = TinkerFactory.createModern().traversal()
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> g.E(8).drop()
+gremlin> g.V(1).addE('test').to(V(4)).
+......1>   V(1, 4).as('a').
+......2>   repeat(both().simplePath()).
+......3>     emit(loops().is(gt(1))).
+......4>   both().
+......5>   where(eq('a')).
+......6>   path().
+......7>   dedup().
+......8>     by(unfold().order().by(id).dedup().fold())
+gremlin> 
+{% endhighlight %}
+
+The traversal should have returned one path, but did not. Interestingly, however, if the traversal were broken in two where the mutation was performed first and then the cycle detection, the appropriate answer would be returned:
+
+{% highlight text %}
+gremlin> g = TinkerFactory.createModern().traversal()
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> g.E(8).drop()
+gremlin> g.V(1).addE('test').to(V(4))
+==>e[13][1-test->4]
+gremlin> g.V(1, 4).as('a').
+......1>   repeat(both().simplePath()).
+......2>     emit(loops().is(gt(1))).
+......3>   both().
+......4>   where(eq('a')).
+......5>   path().
+......6>   dedup().
+......7>     by(unfold().order().by(id).dedup().fold())
+==>[v[1],v[4],v[3],v[1]] 
+{% endhighlight %}
+
+On the surface, these two executions seemed quite perplexing. In a [previous post][2], I discussed the use of `profile()` step for debugging purposes. Let's put that into practice here:
+
+{% highlight text %}
+gremlin> g.V(1).addE('test').to(V(4)).
+......1>   V(1, 4).as('a').
+......2>   repeat(both().simplePath()).
+......3>     emit(loops().is(gt(1))).
+......4>   both().
+......5>   where(eq('a')).
+......6>   path().
+......7>   dedup().
+......8>     by(unfold().order().by(id).dedup().fold()).profile()
+==>Traversal Metrics
+Step                                                               Count  Traversers       Time (ms)    % Dur
+=============================================================================================================
+TinkerGraphStep(vertex,[1])                                            1           1           0.071    18.45
+AddEdgeStep({label=[test], ~to=[[TinkerGraphSte...                     1           1           0.079    20.64
+  TinkerGraphStep(vertex,[4])                                          1           1           0.024
+TinkerGraphStep(vertex,[1, 4])@[a]                                     2           2           0.035     9.19
+RepeatStep([VertexStep(BOTH,vertex), ProfileSte...                     1           1           0.153    39.81
+  LoopsStep                                                            3           3           0.011
+  IsStep(gt(1))                                                                                0.019
+  VertexStep(BOTH,vertex)                                             11          11           0.037
+  PathFilterStep(simple)                                               3           3           0.034
+  RepeatEndStep                                                        1           1           0.062
+VertexStep(BOTH,vertex)                                                1           1           0.022     5.78
+WherePredicateStep(eq(a))                                                                      0.014     3.73
+PathStep                                                                                       0.004     1.25
+DedupGlobalStep([UnfoldStep, ProfileStep, Dedup...                                             0.004     1.14
+                                            >TOTAL                     -           -           0.385        -
+{% endhighlight %}
+
+We can see that `addEdge()` step produces an edge given that the Count and Traversers columns are set at 1 for that step. That traverser triggers the lookup of the 2 vertices at `V(1,4)`. Without focusing too much on the profile of the `repeat()`-step, we can see that it is at least producing one traverser in this case, so perhaps that is working properly. The stream doesn't die until it hits the `where(eq('a'))`-step when no additional traversers are produced. My typical tactic for debugging when I see a filter that is being overly greedy, so as to remove all traversers when not expected, is to simply remove it and see what happens:
+
+{% highlight text %}
+gremlin> g = TinkerFactory.createModern().traversal()
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> g.E(8).drop()
+gremlin> g.V(1).addE('test').to(V(4)).
+......1>   V(1, 4).as('a').
+......2>   repeat(both().simplePath()).
+......3>     emit(loops().is(gt(1))).
+......4>   both().
+......5>   path().
+......6>   dedup().
+......7>     by(unfold().order().by(id).dedup().fold())
+==>[v[1],e[13][1-test->4],v[4],v[3],v[6],v[3]]
+{% endhighlight %}
+
+Without the `where()` we get a single path as a result which indirectly yields a hint as to the root of the problem and that problem is not with `where()` as I had originally thought. The output of `[v[1],e[13][1-test->4],v[4],v[3],v[6],v[3]]` made me quickly realize that the `Path` object was longer than expected in the sense that it was including elements of the mutation portion of the traversal. That behavior is perfectly reasonable, but for whatever reason I'd not immediately considered it. With that thought in mind, I realized that while `where(eq('a'))` was not being overly greedy, but `simplePath()` was instead. 
+
+The `simplePath()`-step was evaluating the entire path of the traversal starting from the initial `V(1)`-step, when it should have started filtering based on a subset of that path starting at the `V(1, 4)`-step labelled "a". If we don't start from "a", the path cycles almost immediately and filters away. This explanation also supported why the earlier experiment which ran the mutation traversal independently of the cycle detection traversal produced the expected results, as the cycle detection traversal no longer had the mutation steps in place to confuse things.
+
+We can fine tune the portion of the path to be evaluated by `simplePath()` utilizing `from()` and `to()` modulators. In this case, we only need to shorten the left-hand side of the path and start the evaluation at "a", thus:
+
+{% highlight text %}
+gremlin> g = TinkerFactory.createModern().traversal()
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> g.E(8).drop()
+gremlin> g.V(1).addE('test').to(V(4)).
+......1>   V(1, 4).as('a').
+......2>   repeat(both().simplePath().from('a')).
+......3>     emit(loops().is(gt(1))).
+......4>   both().
+......5>   where(eq('a')).
+......6>   path().
+......7>   dedup().
+......8>     by(unfold().order().by(id).dedup().fold())
+==>[v[1],e[13][1-test->4],v[1],v[4],v[3],v[1]]
+{% endhighlight %}
+
+I don't think using `from()` and `to()` modulators with `simplePath()` is terribly common, but it clearly has its uses in more complex cases especially those where an upfront mutation to the graph is followed by read operations that require `simplePath()` in isolation of that initial mutation.
+
+[1]:https://groups.google.com/d/msg/gremlin-users/mOrdGRSMjmU/o3JgT7nsAgAJ
+[2]:{% post_url 2020-04-18-snippet-8 %}
