@@ -1,0 +1,92 @@
+---
+layout: snippet-post
+title:  "Removing backtracking"
+date:   2020-06-20
+categories: snippet
+version: 3.4.7
+---
+
+I came across this bit of Gremlin in a presentation that was, in some sense, comparing it to another graph query language. Here was the query in its original form:
+
+{% highlight groovy %}
+g.V().hasLabel('Customer').
+  values('name').as('name').
+  outE('Bought').as('b').
+  values('discount').as('disc').
+  select('b').
+  values('quantity').as('quant').
+  select('b').
+  outV().
+  has('Product','category', eq('toy')).as('p').
+  values('price').as('price').
+  select('price','disc','quant').
+  map{it.get().price * (1 - it.get().disc/100.0) * it.get().quant}.as('sale_price').
+  select('name','sales_price').
+  group().by('name').by(sum()) 
+{% endhighlight %}
+
+If you were unfamiliar with Gremlin you might find this query fairly intimidating (especially when compared to the other query language just below it filling all of eight lines). If you were familiar with Gremlin you might not be intimidated, but you would probably have to spend a moment or two trying to get to the bottom of what was going on in this query. If you did that, you would find that the query is basically trying to find the total price paid by each customer for "toy" purchases.
+
+I decided to try to execute this traversal and constructed the following sample graph for it:
+
+{% highlight groovy %}
+g.addV('Customer').property('name','A').as('a').
+  addV('Customer').property('name','B').as('b').
+  addV('Product').property('name','w').property('category','food').property('price', 10.0).as('w').
+  addV('Product').property('name','X').property('category','toy').property('price', 10.0).as('x').
+  addV('Product').property('name','Y').property('category','toy').property('price', 20.0).as('y').
+  addV('Product').property('name','Z').property('category','toy').property('price', 30.0).as('z').
+  addE('Bought').property('quantity',5).property('discount',0.5).from('a').to('w').
+  addE('Bought').property('quantity',5).property('discount',0.5).from('a').to('x').
+  addE('Bought').property('quantity',1).property('discount',0.0).from('a').to('y').
+  addE('Bought').property('quantity',1).property('discount',0.5).from('b').to('x').
+  addE('Bought').property('quantity',3).property('discount',0.0).from('b').to('z').iterate()
+{% endhighlight %}
+
+I found that the original traversal did not quite work properly without some changes. Specifically, it tries to call `outE()` on the result of `values('name')` and it attempts to `sum()` a `Map` rather than the "sale_price" in the `Map`, so with some minor adjustments:
+
+{% highlight text %}
+gremlin> g.V().hasLabel('Customer').as('c').
+......1>   values('name').as('name').
+......2>   select('c').
+......3>   outE('Bought').as('b').
+......4>   values('discount').as('disc').
+......5>   select('b').
+......6>   values('quantity').as('quant').
+......7>   select('b').
+......8>   inV().
+......9>   has('Product','category', eq('toy')).as('p').
+.....10>   values('price').as('price').
+.....11>   select('price','disc','quant').
+.....12>   map{it.get().price * (1 - it.get().disc/100.0) * it.get().quant}.as('sale_price').
+.....13>   select('name','sale_price').
+.....14>   group().
+.....15>     by('name').
+.....16>     by(select('sale_price').sum()) 
+==>[A:69.7500,B:99.9500]
+{% endhighlight %}
+
+Those changes made the traversal work, but also made it longer and certainly not any easier to follow. The primary reason for the complexity is the heavy use of `select()` to backtrack into earlier steps of the traversal. More often than not, backtracking is not necessary for writing traversals and is a prime candidate for refactoring your Gremlin to something more readable and performant. From the performance perspective, the removal of step labels and path access with `select()` will disable path-tracking which should reduce the cost of traversal execution. As a further immediately noticeable issue, the use of a lambda for a math calculation should be eliminated.
+
+I ended up re-writing the above traversal to something more concise at half the line length, more readable, without lambdas and without need for backtracking and path history:
+
+{% highlight text %}
+gremlin> g.V().hasLabel('Customer').
+......1>   project('name','sale_price').
+......2>     by('name').
+......3>     by(outE('Bought').where(inV().has('Product','category','toy')).
+......4>        project('disc','quant','price').
+......5>          by('discount').
+......6>          by('quantity').
+......7>          by(inV().values('price')).
+......8>        math('price * (1 - disc/100.0) * quant').sum())
+==>[name:A,sale_price:69.75]
+==>[name:B,sale_price:99.95]
+{% endhighlight %}
+
+The use of `project()` is key to the rewrite. Here the improved readability derives from the fact that we can immediately see that for each "Customer" we want to get the "name" and a "sale_price" as a result. Having that information at the front of the traversal rather than at the very end makes it quite clear what kind of output is being produced. The calculation of the "sale_price" is encapsulated in the second `by()` modulator where `project()` again demonstrates its clarity by explicitly naming and extracting the components of the ensuing calculation provided to `math()` step. Obviously, the format of the output in the revised traversal differs slightly from the original, but functionally presents the same data. With some added Gremlin steps we could achieve the same format by deconstructing the `Map` and then reconstructing it in the form required.
+
+There's nothing wrong with approaching a traversal from the perspective of getting to a fast solution by whatever methods you immediately find. I think that's a fairly common approach to programming in general and one of the advantages of Gremlin is that it yields you a great degree of flexibiilty to do that. It is important however to come back to that traversal and look for common patterns that indicate improvements are possible. Heavy use of `as()` and `select()`, especially for backtracking, is a usually hint that some refactoring is in order. I hope this post provides some inspiration for how to make improvements when such patterns are noticed.
+
+
+
