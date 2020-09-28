@@ -11,6 +11,7 @@ From the moment I saw [this question][1] in StackOverflow, I could mostly envisi
 Before progressing too much further, let's cast some attention to the question. It presented an algorithm that involved calculating a "favor score" based on "weight" properties assigned to "favor" edges between "person" vertices. The sample graph looked like this: 
 
 ![Sample Graph](/images/snippet-13-graph-viz.png)
+<sup>Visualization by <a href="https://gremlify.com/">Gremlify</a>.</sup>
 
 and here is the script to generate it:
 
