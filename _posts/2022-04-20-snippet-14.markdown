@@ -1,0 +1,52 @@
+---
+layout: snippet-post
+title:  "If-Then Semantics"
+date:   2022-04-20
+categories: snippet
+graph: modern
+version: 3.5.3
+---
+
+Getting good at Gremlin is as much about writing readable and intutive traversals as it is writing performant ones. Gremlin has a lot of ways to accomplish the same goal and you can easily write two equivalent traversals with a wildly different set of steps. It is also easy to write a working query that uses steps in ways that do not easily convey meaning and intent to someone who comes along and reads it later - and that person may be yourself a year or more down the line. As such, I'm a big proponent of Gremlin readability and often question if the proper steps and patterns are being used even if my traversal is working
+
+Here's a simple example:
+
+{% highlight text %}
+gremlin> g.V(2).elementMap()
+==>[id:2,label:person,name:vadas,age:27]
+gremlin> g.V(2).coalesce(has('k'),
+......1>                 property('k','v'))
+==>v[2]
+gremlin> g.V(2).elementMap()
+{% endhighlight %}
+
+
+The above example shows that we can use `coalesce()` to set a property of "k" if it does not exist. As a reminder, `coalesce()` will return the result of first child traversal argument that returns a value. Therefore, if `has('k')` succeeds as a filter in finding the "k" property key present, then the same vertex that entered the `coalesce()` is the same that will exit. If the "k" property key is not present then the property is added as a side-effect and therefore the same vertex that entered the `coalesce()` will also exit it.
+
+This traversal succeeds in its goal, but it makes a bit of an unexpected use of `coalesce()` in my mind. The `coalesce()` step is actually a `flatMap()` step and therefore implies something transformative happening to the traverser, but in this usage the traverser carrying the vertex that enters the `coalesce()` passes through unchanged (ignoring the side-effect of `property('k','v')`) irrespective of the path taken. It takes a moment to realize that `coalesce()` used in this fashion is really just an if-then pattern. To compound the matter, the `if` portion has to be inverted for it to work in the `coalesce()` context. In other words, we really want to say "if the 'k' property is *not* present, then ...", but we're instead forced to read the reverse of `has('k')` so that a vertex that has it will pass through unchanged.  
+
+Since we have an if-then pattern, then perhaps it would be more explicit and readable to present it that way with `choose()` which is designed for that purpose:
+
+
+{% highlight text %}
+gremlin> g.V(2).choose(hasNot('k'), 
+......1>               property('k','v'))
+==>v[2]
+gremlin> g.V(2).elementMap()
+==>[id:2,label:person,name:vadas,k:v,age:27]
+{% endhighlight %}
+
+The above example makes the if-then far more explicit and we can more immediately recognize that section of Gremlin as "*if* there is no 'k' property *then* it should be added". While the traversal readability has improved, it could still be modified to convey more about the intent. The primary purpose of the if-then pattern is to trigger a side-effect of adding a property key, which is really easy to read as a single traversal of `hasNot('k').property('k','v')`. It's nice to be able to immediately know that a particular traversal is meant purely for side-effect purposes as your mind can block out the entire section of a traversal, no matter how complex it is, knowing that it will not alter the current traverser:
+
+{% highlight text %}
+gremlin> g.V(2).sideEffect(hasNot('k').property('k','v'))
+==>v[2]
+gremlin> g.V(2).optional(hasNot('k').property('k','v'))
+==>v[2]
+gremlin> g.V(2).elementMap()
+==>[id:2,label:person,name:vadas,k:v,age:27]
+{% endhighlight %}
+
+The above example demonstrates two ways to do this isolation. The first is to simply use `sideEffect()` because it explicitly denotes the child traversal it contains as being executed solely for that purpose. The second approach, which uses `optional()`, is a bit more specific to this case, where the child traversal is extremely simplistic and it's clear that the incoming traverser will not be transformed. I think `optional()` has a readability benefit here over `coalesce()`, despite them being similar steps, because `optional()` doesn't force the check for "k" to be inverted and the entire child traversal stays together as opposed to being separate arguments.
+
+Please bear in mind that these traversals might all look quite simple and equally readable, but when expanded into the real world with traversals that are dozens of lines long, these patterns tend to matter. It's important to be able to immediately spot an if-then situation or a long child traversal that just trickles into a side-effect. Without those signals, deciphering Gremlin can end up quite time consuming.
