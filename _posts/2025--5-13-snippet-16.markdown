@@ -1,0 +1,90 @@
+---
+layout: snippet-post
+title:  "tree() Node Equality"
+date:   2025-05-13
+categories: snippet
+graph: modern
+version: 3.7.3
+---
+
+While working with [`tree()` step](https://tinkerpop.apache.org/docs/current/reference/#tree-step) in Gremlin, I noticed an important aspect of how the resulting `Tree` object is constructed-one that can significantly affect your query results. As a reminder, tree() aggregates the paths traversers take through the graph into a hierarchical tree structure, capturing the branching nature of those traversals.
+
+A basic example:
+
+{% highlight text %}
+gremlin> g.V().out().out().tree().next()
+==>v[1]={v[4]={v[3]={}, v[5]={}}}
+{% endhighlight %}
+
+The raw Tree object can be hard to interpret, but conceptually, the output above represents:
+
+{% highlight text %}
+|--v[marko]
+   |--v[josh]
+      |--v[ripple]
+      |--v[lop]
+{% endhighlight %}
+
+Consider a more involved traversal:
+
+{% highlight text %}
+g.V(1).outE().inV().bothE().otherV().tree()
+{% endhighlight %}
+
+This produces a tree structure like:
+
+{% highlight text %}
+|--v[marko]
+   |--e[marko-knows->vadas]
+      |--v[vadas]
+        |--e[marko-knows->vadas]
+           |--v[marko]
+   |--e[marko-knows->josh]
+      |--v[josh]
+         |--e[josh-created->ripple]
+            |--v[ripple]
+         |--e[josh-created->lop]
+            |--v[lop]
+         |--e[marko-knows->josh]
+            |--v[marko]
+   |--e[marko-created->lop]
+      |--v[lop]
+         |--e[marko-created->lop]
+            |--v[marko]
+         |--e[josh-created->lop]
+            |--v[josh]
+         |--e[peter-created->lop]
+            |--v[peter]
+{% endhighlight %}
+
+The `tree()` step supports [`by()` modulation](https://tinkerpop.apache.org/docs/current/reference/#by-step) allowing you to control what is stored at each level of the tree. For example, you can extract the "name" property for vertices and the `label` for edges:
+
+{% highlight text %}
+g.V(1).outE().inV().bothE().otherV().
+  tree().by("name").by(T.label)
+{% endhighlight %}
+
+This changes the structure of the output:
+
+{% highlight text %}
+|--marko
+   |--knows
+      |--vadas
+         |--knows
+            |--marko
+      |--josh
+         |--created
+            |--ripple
+            |--lop
+         |--knows
+            |--marko
+   |--created
+      |--lop
+         |--created
+            |--marko
+            |--josh
+            |--peter
+{% endhighlight %}
+
+The crucial point to note is that the `tree()` step builds its structure based on node equality at each level. This means that if two traversers arrive at nodes that are considered equal, they will share the same branch in the tree, even if they arrived via different paths. In the example above, the root node ("marko") has only two children ("knows" and "created"), corresponding to the two unique edge labels, not the number of edges. This rule applies recursively throughout the tree and can lead to structural differences that may be surprising if you expect the tree to reflect the number of paths rather than the uniqueness of values at each step.
+
