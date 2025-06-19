@@ -7,7 +7,11 @@ graph: modern
 version: 3.4.7
 ---
 
+## The Challenge of Subgraphing in Gremlin
+
 Subgraphing is a common use case when working with graphs. We often find ourselves wanting to take some small portion of a graph and then operate only upon it. Gremlin provides `subgraph()` step, which helps to make this operation relatively easy by exposing a way to produce an edge-induced subgraph that is detached from the parent graph.
+
+## Limitations and Workarounds
 
 Unfortunately, `subgraph()` can come with some limitations. One of the limitations that non-JVM based Gremlin Language Variants have, is the lack of support for `subgraph()` step which is discussed on [TINKERPOP-2063][1]. The reason why `subgraph()` step isn't supported is because, unlike the JVM which of course has TinkerGraph, there is no `Graph` object to deserialize the resulting subgraph back into for languages like Python, Javascript and .NET. There are also some graph systems that simply do not support the `subgraph()` step and therefore fail to produce subgaphs even when using JVM-based langauges.
 
@@ -35,6 +39,8 @@ gremlin> sg.E()
 ==>e[10][4-created->5]
 ==>e[11][4-created->3]
 {% endhighlight %}
+
+## Alternative Approaches: store() and Edge Lists
 
 If we think about the TinkerGraph a bit in the above example, it is really just a data structure (i.e. a graph data structure) that happens to organize the data we have and allows us to search it in a particular way (i.e. Gremlin). In fact, when we do query it as `g.E()` we effectively get a collection of `Edge` objects where each holds an outgoing and incoming `Vertex` object. If we opted to forgo the ability to use Gremlin and to analyze this data as a graph it really could have been queried without `subgraph()` at all:
 
@@ -106,6 +112,8 @@ gremlin> g.V().has('person','name','marko').
 ==>edges=[{e=[8, knows], outv=1, inv=4}, {e=[10, created], outv=4, inv=5}, {e=[11, created], outv=4, inv=3}]
 {% endhighlight %}
 
+## Practical Examples and Visualization
+
 From here, it is not hard to conceive of other formats that the subgraph might take. Consider how closely the above example matches to the "data" that a Javascript visualization library like [vis.js][4] expects:
 
 {% highlight javascript %}
@@ -168,6 +176,8 @@ gremlin> g.V().has('person','name','marko').
 ==>nodes=[{id=1, label=marko}, {id=4, label=josh}, {id=5, label=ripple}, {id=3, label=lop}]
 ==>edges=[{from=1, to=4}, {from=4, to=5}, {from=4, to=3}]
 {% endhighlight %}
+
+## Using path() for Subgraph Extraction
 
 In addition to `store()` it may also make sense to try to utilize `path()` to extract a subgraph as the elements Gremlin traverses will all be present in the path history. The downside is that you're left to remove duplicates and filter out path elements which may not be applicable to your subgraph. The nice thing about `path()` for subgraphing is that it won't really pollute your Gremlin traversal in the way that `store()` does, as `store()` needs to appear after every step where you wish to keep a `Vertex` or `Edge` for your subgraph. 
 

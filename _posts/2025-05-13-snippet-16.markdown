@@ -7,7 +7,11 @@ graph: modern
 version: 3.7.3
 ---
 
+## Understanding the tree() Step in Gremlin
+
 While working with [`tree()` step](https://tinkerpop.apache.org/docs/current/reference/#tree-step) in Gremlin, I noticed an important aspect of how the resulting `Tree` object is constructed-one that can significantly affect your query results. As a reminder, tree() aggregates the paths traversers take through the graph into a hierarchical tree structure, capturing the branching nature of those traversals.
+
+## Practical Examples and Output Structure
 
 A basic example:
 
@@ -56,6 +60,8 @@ This produces a tree structure like:
          |--e[peter-created->lop]
             |--v[peter]
 {% endhighlight %}
+
+## Controlling Tree Structure with by() Modulation and Node Equality
 
 The `tree()` step supports [`by()` modulation](https://tinkerpop.apache.org/docs/current/reference/#by-step) allowing you to control what is stored at each level of the tree. For example, you can extract the "name" property for vertices and the `label` for edges:
 

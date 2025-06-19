@@ -7,6 +7,8 @@ graph: modern
 version: 3.4.6
 ---
 
+## Understanding the choose() Step in Gremlin
+
 {% highlight groovy %}
 g.V().coalesce(values('age'), constant(null)).
   map(choose(is(null), 
@@ -47,6 +49,8 @@ gremlin> g.V().choose(has('age'),constant('person'),constant('software'))
 
 Note that in the if-then example, there is no “else” option and therefore the vertex passes through the `choose()` unchanged. 
 
+## Introducing and Testing null in Traversals
+
 In TinkerPop 3.5.0, `null` has new semantics within Gremlin traversals. Where it formerly acted as a filter, it now preserves itself as a traverser which means that we can reason upon it in traversal steps. To examine the behavior of `null` in relation to `choose()`, we first need to introduce some nulls into the traversal somehow as the “modern” graph does not have such data. 
 
 {% highlight plaintext %}
@@ -75,6 +79,8 @@ gremlin> g.V().coalesce(values('age'), constant(null)).
 {% endhighlight %}
 
 We can now see the behavior of `null` in `choose()` and that it appears to be “right” in that given the “modern” toy graph there should be two “software” vertices without an “age” key and thus two “nulled” results with the rest being “person” vertices and thus “not nulled”.
+
+## Combining Results and Refining the Approach
 
 We would like to be more certain though about these results. Let’s actually display the “age” along with the “null” or “not nulled” constant. While there are a myriad of ways to approach this, we could simply `union()` the value of the “age” and the `constant()` text.
 

@@ -6,6 +6,8 @@ categories: snippet
 version: 3.4.6
 ---
 
+## Property Assignment: Traditional vs. Map-Based Approaches
+
 The typical method for setting properties on a graph element, such as a `Vertex`, is to use the `property()`-step. This step looks a bit like the `put()` method of a Java `Map` which takes a key and a value as its argument (though `property()` can optionally take additional arguments for `Cardinality` and meta-properties). It's fitting that these APIs are similar since an `Element` essentially holds a `Map` of properties. Setting key and value pairs for one of these objects looks quite like the other:
 
 {% highlight java %}
@@ -20,6 +22,8 @@ Vertex v = g.addV("person").
              property("country", "usa").next();
 {% endhighlight %}
 
+## Using Maps to Dynamically Insert Vertex Properties
+
 Given the prevalence of `Map` usage when programming and the analagous sort of structure that it has to an `Element`, there may be situations where it would be helpful to use the contents of `Map` to update an `Element`. The most obvious and brute force approach would be to iterate the pairs of the `Map` and call `property()` on the `GraphTraversal` for each:
 
 {% highlight java %}
@@ -32,6 +36,8 @@ GraphTraversal<Vertex,Vertex> t = g.addV("person");
 m.forEach((k,v) -> t.property(k,v));
 Vertex v = t.next();
 {% endhighlight %}
+
+## Gremlin Console: Streamlined Map-Based Insertion
 
 On the other hand, it is possible to do this as Gremlin. To demonstate we will switch to the Gremlin Console and Groovy where the same `Map` is constructed as:
 
@@ -57,6 +63,8 @@ gremlin> g.V().has('person','name','marko').elementMap()
 {% endhighlight %}
 
 We use `sideEffect()` at line 2 to treat the update of the properties of the newly added "person" vertex as something separate from what we want to have as the result. Without `sideEffect()` the inserted vertex would be returned once for each property that was updated. 
+
+## Batch Insertion of Vertices Using Lists of Maps
 
 If you are good with collection manipulation in Gremlin, you should be able to see how to extend upon this pattern to insert batches of vertices using a `List` of `Map` objects:
 
@@ -84,6 +92,8 @@ gremlin> g.V().elementMap()
 {% endhighlight %}
 
 In this case, we use `inject()` to start the traversal by giving it a `List` of `Map` objects. We immediately `unfold()` that `List` to individual `Map` objects in the stream so that `addV()` and its follow-on steps are called once per `Map` object (i.e. each `Map` corresponds to one newly added `Vertex`). The rest of the traversal stays the same.
+
+## Improving Readability: The Case for a Custom DSL Step
 
 There is a bit of complexity to this Gremlin that makes readability difficult. Combine the readabiilty issue with what might be considered a common operation and there is likely a candidate for an improvement to Gremlin syntax. While Gremlin does not yet provide a better way to update an `Element` with a `Map`, it would be quite possible to develop a [custom DSL step][1] to at least improve readability to some degree. Perhaps, that DSL step would be called `propertyAll()` which follows the naming of `putAll()` on a Java `Map`:
 
@@ -117,6 +127,8 @@ gremlin> m = [name:'marko',age:29,country:'usa']
 gremlin> g.addV('person').propertyAll(m)
 ==>v[0]
 {% endhighlight %}
+
+## Looking Ahead: Native Map Support in Gremlin
 
 Perhaps Gremlin should natively support `Map` for this particular use case better than it currently does. Of course, I think I'd like to consider it in more general terms than being just bound to `Element` manipulation and I'd wonder what compromises would have to be made for multi/meta-properties as a result of such an addition.
 

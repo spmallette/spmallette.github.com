@@ -7,6 +7,8 @@ graph: crew
 version: 3.4.6
 ---
 
+## Understanding the local() Step
+
 One of the more misunderstood, misused or simply unknown parts of the Gremlin language is `local()`-step. Its purpose is to execute a child traversal on a single element within the stream. In the following example `limit(2)` is applied to the stream in a global fashion and thus only two results are returned:
 
 {% highlight text %}
@@ -28,6 +30,8 @@ gremlin> g.V().local(properties('location').limit(2)).value()
 ==>spremberg
 ==>kaiserslautern
 {% endhighlight %}
+
+## Comparing local(), map(), and flatMap()
 
 A common mistake is to think of `local()` as behaving like `map()`:
 
@@ -103,6 +107,8 @@ gremlin> g.V().hasLabel('software').both().barrier().local(groupCount().by("name
 ==>[marko:4]
 ==>[gremlin:1]
 {% endhighlight %}
+
+## Traversal Optimization and the Role of Bulking
 
 To understand the subtle difference at play here requires some discussion on traversal optimization techniques that are employed by Gremlin. Core to these techniques is the notion of bulking, which can be triggered by some form of [barrier step][2]. The barrier essentially triggers the traversal to process some or all of the traversers up to that barrier step (whether it process "some or all" is dependent upon the nature of the step itself). In performing this processing, the barrier may group or "bulk" traversers together if they are the same, incrementing a counter for each instance found thereby reducing the number of `Traverser` objects in memory and thus reducing the expense of the traversal itself. We can see bulking in action in `profile()` step where the "Traverser" column will often be smaller than the object "Count" column.
 

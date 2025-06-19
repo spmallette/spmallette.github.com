@@ -1,0 +1,100 @@
+---
+layout: snippet-post
+title:  "Unique Vertex Label Anti-pattern"
+date:   2025-06-19
+categories: snippet
+graph: modern
+version: 3.7.3
+---
+
+## Understanding Vertex Labels in Graph Databases
+
+Graph databases like those powered by Apache TinkerPop provide a robust framework for working with connected data. However, as with any powerful tool, there are ways to misuse it and one such common anti-pattern is using unique values for vertex labels. While this topic has been covered in other blog posts, Stackoverflow posts, books and graph database documentation, it still remains a trap that newcomers to graphs seem to make and therefore begs another treatment of the topic.
+
+A vertex label is a string that categorizes vertices into logical groups. For example, a social network graph might have vertices labeled `person`, `post`, or `comment`. Labels help organize your data, enable efficient queries, and allow graph systems to optimize storage and indexing.
+
+```groovy
+g.addV('person').property('name', 'alice')
+g.addV('person').property('name', 'bob')
+```
+
+Here, both vertices are labeled 'person', making it easy to query all people in the graph.
+
+## The Unique Vertex Label Anti-Pattern
+
+A common mistake is to use a vertex label as if it were a unique identifier or a property. For instance, someone might assign a label to each vertex that is unique to that vertex:
+
+```gremlin
+g.addV('user_1').property('name', 'alice')
+g.addV('user_2').property('name', 'bob')
+```
+
+Or, worse, use a label that is derived from a property value:
+
+```gremlin
+g.addV('alice').property('name', 'alice')
+g.addV('bob').property('name', 'bob')
+```
+
+This approach misuses the label concept and leads to several problems.
+
+## Consequences of Misusing Vertex Labels
+
+Vertex labels are intended for grouping and filtering, not for uniqueness. When you use unique labels, you lose the ability to efficiently query a category of vertices. For example, to find all users in the graph above, you would have to scan every possible label, which is impractical:
+
+```gremlin
+// This is not possible if every user has a unique label!
+g.V().hasLabel('person')
+```
+
+Instead, you would have to use a property filter, which may not be as efficient as a label-based index:
+
+```gremlin
+g.V().has('name', within('alice', 'bob'))
+```
+
+But this only works if you know all possible names, and it may not leverage label-based indexes.
+
+[Amazon Neptune](https://aws.amazon.com/neptune/) and other graph databases optimize queries by using labels as a primary filter. If every vertex has a unique label, Neptune cannot use label-based indexes to speed up queries. This forces the engine to scan the entire graph, degrading performance—especially as the graph grows.
+
+Additionally, Neptune treats each distinct vertex label as a predicate. If you have thousands or millions of unique labels, you risk hitting performance limits due to high predicate counts. [Neptune’s documentation](https://docs.aws.amazon.com/neptune/latest/userguide/gremlin-traversal-tuning.html) specifically warns about the negative impact of high numbers of predicates on query performance.
+
+Graph visualization tools often use vertex labels to group and color nodes. If every vertex has a unique label, visualizations become cluttered and lose their ability to convey meaningful structure. Instead of seeing clear categories (like “person” or “post”), you see a sea of indistinguishable nodes. In addition, these tools are likely not optimized for this anti-pattern and may encounter basic performance problems as a result.
+
+## Practical Examples and Correct Usage
+
+Consider a graph where each user has a unique label:
+
+```gremlin
+g.addV('user_1').property('name', 'alice')
+g.addV('user_2').property('name', 'bob')
+```
+To find all users, you cannot use a label filter, so you must resort to property-based queries, which are less efficient:
+
+```gremlin
+g.V().has('name', within('alice', 'bob'))
+```
+If you add more users, the query becomes increasingly unwieldy and slow.
+
+## The Correct Approach
+
+Use vertex labels to group vertices by type, and use properties for unique identifiers or other attributes. For example:
+
+```gremlin
+g.addV('person').property('name', 'alice')
+g.addV('person').property('name', 'bob')
+```
+
+Now, you can efficiently query all people:
+
+```gremlin
+g.V().hasLabel('person')
+```
+
+Or find a specific person by name:
+
+```gremlin
+g.V().has('person', 'name', 'alice')
+```
+
+This approach leverages label-based indexing, improves query performance, and makes your graph easier to understand and visualize.

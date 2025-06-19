@@ -7,6 +7,8 @@ graph: modern
 version: 3.4.6
 ---
 
+## Understanding fold() and unfold() in Gremlin
+
 Many advanced and even intermediate-level Gremlin examples are peppered with the use of the `fold()` step and the related `unfold()` step. As a reminder, `fold()` gathers all elements in the stream to that point and reduces them to a `List` and `unfold()` does the opposite, taking a `List` and unrolling it to its individual items and placing each back in the stream:
 
 {% highlight plaintext %}
@@ -17,6 +19,8 @@ gremlin> g.V().has('person','name','marko').out().fold().unfold()
 ==>v[2]
 ==>v[4]
 {% endhighlight %}
+
+## The Role of fold() in by() Modulators
 
 While the above sort of usage tends to present an obvious example, we typically see `fold()` tucked away in `by()` modulators where its usage appears more enigmatic:
 
@@ -52,6 +56,8 @@ gremlin> g.V().has('person','name','marko').flatMap(out().values('name'))
 ==>vadas
 ==>josh
 {% endhighlight %}
+
+## Why fold() Matters in Stream Reduction
 
 Given this behavior, it is important to include some form of reducing step to `by()` unless of course, there is only a desire for the first stream result which is sometimes the case. The `fold()` step is a most typical reducer, but `count()`, `sum()`, etc. all exhaust the stream into a single value and therefore also make for good examples of these semantics.
 

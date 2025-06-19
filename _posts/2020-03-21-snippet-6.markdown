@@ -6,6 +6,8 @@ categories: snippet
 version: 3.4.6
 ---
 
+## Setting Up the Example Data
+
 The following dataset represents text messages being sent among a group of "person" vertices:
 
 {% highlight groovy %}
@@ -23,6 +25,8 @@ g.addV('person').property('name', 'marko').as('a').
   addE('text').property('count', 10).from('e').to('c')
 {% endhighlight %}
 
+## Exploring Edge Grouping Basics
+
 We might become interested in doing some sort of analysis that answered the question of "Who does 'marko' send messages to and receive messages from and how many of those messages are there per person?" The start to such a traversal surely involves finding "marko", traversing incoming and outgoing edges, and then grouping on the "person" vertices to which "marko" is connected:
 
 {% highlight plaintext %}
@@ -34,6 +38,8 @@ gremlin> g.V().has('person','name','marko').
 ==>peter=[e[14][6-text->0], e[15][6-text->0]]
 ==>vadas=[e[10][0-text->2], e[11][0-text->2], e[13][2-text->0]]
 {% endhighlight %}
+
+## Extracting Message Counts and Determining Directions
 
 The structure of the result is beginning to form itself as we can see the names of the people who send and receive messages to and from "marko", but an important step remains. The values in that `Map` are lists of `Edge` objects and need to be converted to a form that explains the number of messages sent and received for each person. That value would be best represented as a `Map` within "sent" and "received" keys where their values represented the total number of messages. 
 
@@ -47,6 +53,8 @@ gremlin> g.V().has('person','name','marko').
 ......4>     by('count')
 ==>[daniel:[20],peter:[25,30],vadas:[10,12,25]]
 {% endhighlight %}
+
+## Projecting and Filtering for Sent/Received Breakdown
 
 Going back to the original purpose of our analysis, we can see that while these numbers could provide us with the "total number of messages sent and received per person" we can't use them as-is to determine how many were sent and how many were received as we need to utlize the direction of the edge to figure that out. Since we want to reduce this `Edge` list into a `Map` with "sent" and "received" keys, it would be good to use `project()`. This step is helpful when we know the names of the keys ahead of time and want to push values into them.
 
@@ -95,6 +103,8 @@ gremlin> g.V().has('person','name','marko').
 ==>peter={received=55, sent=0}
 ==>vadas={received=25, sent=22}
 {% endhighlight %}
+
+## Summarizing Results with Group and Sum
 
 Each `Map` is [deconstructed][recipes] to key/value pairs by `unfold()` and is then reconstructed with `group()` and the values reduced by way of `sum()`. This approach is a common pattern in collection manipulation and should be recgonizable to more advanced Gremlin users. 
 

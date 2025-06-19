@@ -7,6 +7,8 @@ graph: modern
 version: 3.7.3
 ---
 
+## Understanding the tree() Step in Gremlin
+
 While helping someone with Gremlin traversal that made use of `tree()`, I realized that there are some aspects of this step that could use further explanation. To start, `tree()` can be used in two different ways: 
 
 {% highlight text %}
@@ -21,7 +23,13 @@ gremlin> g.V().out().tree('x').select('x')
 ==>[v[1]:[v[2]:[],v[3]:[],v[4]:[]],v[4]:[v[3]:[],v[5]:[]],v[6]:[v[3]:[]]]
 {% endhighlight %}
 
-In the first example, `tree()` acts as a barrier which eagerly consumes the stream and then outputs the resulting `Tree` object. In the second example, with `tree('x')` which provides a side-effect key, the step consumes the stream lazily, such that each traverser reaching `select()` shows the `Tree` building itself as traversers pass through. Focusing on the second example, a tempting approach to get the final `Tree` might be to try to introduce `limit(1)`, but the following example demonstrates that this will not work:
+## Eager vs. Lazy Execution and Key Differences
+
+In the first example, `tree()` acts as a barrier which eagerly consumes the stream and then outputs the resulting `Tree` object. In the second example, with `tree('x')` which provides a side-effect key, the step consumes the stream lazily, such that each traverser reaching `select()` shows the `Tree` building itself as traversers pass through. 
+
+## Navigating Pitfalls and Forcing Completion
+
+Focusing on the second example, a tempting approach to get the final `Tree` might be to try to introduce `limit(1)`, but the following example demonstrates that this will not work:
 
 {% highlight text %}
 gremlin> g.V().out().tree('x').limit(1).select('x')
@@ -41,6 +49,8 @@ That said, a more idiomatic approach to this issue is to simply use `cap()`:
 gremlin> g.V().out().tree('x').cap('x')
 ==>[v[1]:[v[2]:[],v[3]:[],v[4]:[]],v[4]:[v[3]:[],v[5]:[]],v[6]:[v[3]:[]]]
 {% endhighlight %}
+
+## Best Practices and Key Takeaways
 
 The `cap()` step is the barrier, forcing consumption of the traversers in the pipeline to fully build the `Tree` as a side-effect in "x". It then grabs the value in "x" and outputs it in the steam as the result. When working with more complex traversals, attention to how objects flow through a traversal is essential for shaping results as intended. Continued exploration of these traversal patterns often reveals additional nuances and opportunities for optimization.
 

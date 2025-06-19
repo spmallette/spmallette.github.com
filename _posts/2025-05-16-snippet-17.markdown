@@ -7,6 +7,8 @@ graph: modern
 version: 3.7.3
 ---
 
+## Understanding dedup() on Path Objects
+
 The `dedup()` step has some interesting behavior when used on a `Path` object and could lead to some unexpected results if not taken into consideration. The following example shows some basic usage:
 
 {% highlight text %}
@@ -32,7 +34,11 @@ gremlin> g.V().union(out().path(), out().path()).dedup()
 ==>[v[6],v[3]]
 {% endhighlight %}
 
-In the prior example, the `dedup()` step removes all of the duplicate `Path` objects to produce just a unique set. A small change to this traversal however could greatly alter the results for `dedup()`. When you label steps in Gremlin with `as()`, those labels are referenced in the `Path` object and then `dedup()` behaves differently as shown in the next example.
+In the prior example, the `dedup()` step removes all of the duplicate `Path` objects to produce just a unique set. 
+
+## The Impact of Step Labeling on dedup() and Path
+
+A small change to this traversal however could greatly alter the results for `dedup()`. When you label steps in Gremlin with `as()`, those labels are referenced in the `Path` object and then `dedup()` behaves differently as shown in the next example.
 
 {% highlight text %}
 gremlin> g.V().union(out().as('x').path(), out().path())
@@ -60,6 +66,8 @@ gremlin> path.labels()
 ==>[]
 ==>[x]
 {% endhighlight %}
+
+## Workarounds and Best Practices for Path Deduplication
 
 The workaround that will ensure that the `dedup()` will not take labels into account is to deconstruct the `Path` to a `List` with `unfold()` which will strip all of the labels:
 

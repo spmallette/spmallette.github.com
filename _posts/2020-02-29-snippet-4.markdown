@@ -6,12 +6,16 @@ categories: snippet
 version: 3.4.6
 ---
 
+## Understanding Map Creation in Gremlin
+
 This is an interesting piece of Gremlin:
 
 {% highlight plaintext %}
 gremlin> g.inject(0).project('x')
 ==>[x:0]
 {% endhighlight %}
+
+## Comparing Static and Dynamic Map Instances
 
 It creates a `Map` from an injected value by passing it to `project()` with a single key. It's interesting because it provides a way to dynamically construct a `Map` using a specified value and key within Gremlin. While it is equally possible to do the following:
 
@@ -43,6 +47,8 @@ gremlin> g.V().constant([x:0])
 ==>[x:0]
 ==>[x:0]
 {% endhighlight %}
+
+## Performance and Equality Implications
 
 There is a subtle difference however:
 
@@ -89,6 +95,8 @@ NoOpBarrierStep                                                        6        
                                             >TOTAL                     -           -           0.253        -
 {% endhighlight %}
 
+## Practical Use Cases and Limitations
+
 Note that the `barrier()` reduces the traverser count to one in both cases. It appears that `Map` equality is based on the contents for bulking purposes. Using the same object (i.e. `constant()`) rather than allocating new ones (i.e. `constant(0).project('x')`) seems to have no direct difference in traversal operation apart from adding more items to the heap for garbage collection in the latter case. Since there are no Gremlin steps that can directly modify the `Map` instance, there don't appear to even be situations where modifications of the same `Map` might cause problems. All anyone could do is `unfold()` the `Map` to entries, merge in new ones, and then create a new `Map` object from that as shown here:
 
 {% highlight plaintext %}
@@ -104,6 +112,8 @@ gremlin> g.V().map(union(constant([x:0]),elementMap()).
 ==>[x:0,name:ripple,label:software,id:5,lang:java]
 ==>[x:0,name:peter,label:person,id:6,age:35]
 {% endhighlight %}
+
+## Future Possibilities for Dynamic Value Generation
 
 The `constant().project()` approach seems to only have some usage where the value is dynamic, but it seems to point out a missing aspect of Gremlin. Specifically, Gremlin lacks the means to dynamically generate values within the traversal. Imagine doing a remote traversal where it was desired to do a server side timestamp. There really is no option in that case. The `constant()`-step does not help for this purpose as whatever value is provided to it will be resolved on the client prior to Gremlin bytecode generation and then sent as a static value to the server. A missing component here is the ability to do:
 

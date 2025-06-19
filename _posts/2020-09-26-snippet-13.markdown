@@ -6,7 +6,11 @@ categories: snippet
 version: 3.4.8
 ---
 
+## The Problem and Initial Thoughts
+
 From the moment I saw [this question][1] in StackOverflow, I could mostly envision how it would work if I were to solve the problem with a [custom VertexProgram][2] in OLAP style. Unfortunately, this was not going to help the person who was asking the question because they were using Python and [Neptune][3]. It is not possible to write `VertexProgram` implementations in Python and Neptune doesn't yet directly support a `GraphComputer` implementation to support it even if the implementation had been done on the JVM. Despite a `VertexProgram` not quite being the right answer, my mind was so locked into it, I had trouble considering the issue any other way and the Gremlin I was writing to try to get an answer reflected that. 
+
+## Understanding the Sample Graph and Algorithm
 
 Before progressing too much further, let's cast some attention to the question. It presented an algorithm that involved calculating a "favor score" based on "weight" properties assigned to "favor" edges between "person" vertices. The sample graph looked like this: 
 
@@ -43,7 +47,11 @@ The algorithm could be roughly explained as:
 2. Traverse each outgoing edge and for each adjacent vertex calculate a "proportional favor" by multiplying the `currentFavor` by the current edge `weight` divided by `totalFavor`. This "proportional favor" is then added to the total for the adjacent vertex.
 3. For each adjacent vertex recalculate favor starting from step 1 until there are no more paths to take.
 
-The algorithm is a lot to take in as text and is more clearly expressed as code, so hopefully the examples to follow will help clarify what is happening. I've explained that my first instinct after reading this question pointed toward a `VertexProgram`, but knowing the answer would not satisfy the problem, my second instinct was that this algorithm was best implemented with [`sack()`-step][4]. While I couldn't quite get that approach to work right, [Kelvin Lawrence][5] was good enough to produce the answer which was suprisingly elegant in its base form:
+The algorithm is a lot to take in as text and is more clearly expressed as code, so hopefully the examples to follow will help clarify what is happening. 
+
+##  Exploring the Gremlin Sack Solution
+
+I've explained that my first instinct after reading this question pointed toward a `VertexProgram`, but knowing the answer would not satisfy the problem, my second instinct was that this algorithm was best implemented with [`sack()`-step][4]. While I couldn't quite get that approach to work right, [Kelvin Lawrence][5] was good enough to produce the answer which was suprisingly elegant in its base form:
 
 {% highlight groovy %}
 g.withSack(1).V().
@@ -61,9 +69,13 @@ g.withSack(1).V().
   sum()
 {% endhighlight %}
 
+## OLAP, VertexPrograms, and GraphComputer Explained
+
 Unable to write the above query in the time I'd allowed myself, I figured I could at least get the `VertexProgram` approach out of my head and implement it as an alternative answer. As a first step to understanding this solution, it is important to gather an understanding of what a `VertexProgram` is and what its relation is to a `GraphComputer`. A `GraphComputer` is the heart of [OLAP-style][6] processing in TinkerPop, where unlike [OLTP-style][7] workloads which focus on processing a localized subset of the graph, OLAP instead focuses on large subsets of the graph or the entire graph. The `GraphComputer` is meant to help orchestrate the work of processing graph in [bulk synchronous parallel][8] style. The "work" is the `VertexProgram` in action, where we can think of the `GraphComputer` as copying the `VertexProgram` to each vertex in the graph for execution in parallel until the termination condition of the `VertexProgram` is met. 
 
 We tend to think of OLAP for large-scale graphs (on the order of billions of edges or more) which would typically imply the use of Spark and its `GraphComputer` [implementation][9], but for learning purposes and perhaps some use cases this approach might make sense for `TinkerGraphComputer`. `TinkerGraphComputer` is designed to work with TinkerGraph and uses a thread pool to distribute work for parallel processing of the graph. In relation to the StackOverflow question, I'd envisioned a solution that would use Java to extract a `subgraph()` from Neptune and then with that subgraph as a TinkerGraph on the client, `TinkerGraphComputer` could be used to process the custom `VertexProgram`. There would potentially be some expense in the serialization cost for the subgraph, but depending on the size of that subgraph the execution of the `TinkerGraphComputer` running all in-memory would likely be quite fast. 
+
+##  Building a Custom VertexProgram: Implementation Walkthrough
 
 There is a fair bit of boilerplate code to building a `VertexProgram` and perhaps that points to an area for improvement. With that concern aside, a `VertexProgram` begins as follows:
 
@@ -169,6 +181,8 @@ public class FavorVertexProgram implements VertexProgram<Double> {
 {% endhighlight %}
 
 While the complete code for the `FavorVertexProgram` will be shown below, the above code is basically the translation of that Gremlin `sack()` implementation, thus taking us from OLTP to OLAP. Writing `VertexProgram` implementations requires a different style of thinking than simply writing a bit of Gremlin, yet both can encode the same algorithm. We see this notion evident in a number of the Gremlin Recipes, where we demonstrate both an OLTP and an OLAP approach to getting an answer and is best exemplified in the [Connected Components][10] and [Shortest Path][11] sections. It is important to figure out whether or not there is an advantage to taking one approach or the other given your use case.
+
+## Comparing OLTP and OLAP Approaches
 
 In the context of the original question, I would think that the OLTP approach is best because it works with Neptune in the programming language of the user's choice, does much of the heavy lifting with `sack()` which is typically quite efficient and I suspect the traversal itself is not global in nature. If this last point is not the case (issues with Neptune and Python aside), then OLAP may prove to be a better choice and we could likely adapt this `FavorVertexProgram` to calculate more than one favor set at a time, so rather than just consider "jane" we might do the same calculation in parallel for all the people in the graph.
 
@@ -373,6 +387,7 @@ public class FavorVertexProgram implements VertexProgram<Double> {
 }
 {% endhighlight %}
 
+## Running the VertexProgram and Reflecting on Use Cases
 
 This `FavorVertexProgram` can then be utilized as follows, where `graph` is a TinkerGraph with the sample data from the script at the start of this post:
 
@@ -395,6 +410,8 @@ which would print:
 {id=6, label=person, ^favor=0.23182957393483708, name=wyd, ^totalFavor=0.0}
 {id=8, label=person, ^favor=0.768170426065163, name=jerryd, ^totalFavor=0.0}
 {% endhighlight %}
+
+## When to Consider Custom VertexPrograms in TinkerPop
 
 While most users won't require a custom `VertexProgram` in the first days of days of their work with their TinkerPop graph system, the possibility for needing to use OLAP ends up looming quite quickly as a graph can grow at a suprising rate. In many cases, users can be satisfied by writing the Gremlin that they've grown accustomed to and executing it as a distributed traversal in OLAP. 
 

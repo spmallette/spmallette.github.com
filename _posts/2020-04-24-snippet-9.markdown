@@ -7,6 +7,8 @@ graph: modern
 version: 3.4.6
 ---
 
+## Understanding Cycles and Path Safety in Gremlin
+
 Graph data structures can contain cycles where a path loops back on itself sending Gremlin running in circles around vertices and edges indefinitely. This issue represents the main reason why we recommend that all `repeat()`-step usage contain some sort of termination condition even if you're completely sure that your data is without cycles. It just takes one edge of bad data that isn't expected to send Gremlin on a never ending walk of the graph. Therefore, we'd prefer the second traversal below as opposed to the first:
 
 {% highlight groovy %}
@@ -14,6 +16,8 @@ g.V().repeat(out())
 
 g.V().repeat(out()).times(100)
 {% endhighlight %}
+
+## How simplePath() Works and Its Limitations
 
 Another defense against cycles is to filter them out. The `simplePath()`-step removes any paths that Gremlin has visted previously:
 
@@ -32,6 +36,8 @@ gremlin> g.V(1).both().both().simplePath()
 ==>v[5]
 ==>v[3]
 {% endhighlight %}
+
+## Advanced Usage: Controlling simplePath() Scope with Modulators
 
 The use of `simplePath()` seems to be fairly well known for Gremlin users, but there are aspects of it that may be less well known, as it is typically seen in examples either by itself as shown above or with a basic `by()` modulation. There are situations where `simplePath()` can be a bit greedy and consider more of the path traversed than you might want. A good example of this situation was discussed recently on the [gremlin-users mailing list][1]. In this case, there was an attempt to do an edge addition followed by a check of the graph for a cyclic path on the basis of that graph mutation:
 

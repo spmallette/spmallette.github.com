@@ -7,7 +7,11 @@ graph: modern
 version: 3.6.2
 ---
 
+## Why Revisit the local()-step?
+
 In recent weeks there have been many questions about the `local()`-step both in [Discord](https://discord.gg/kfebyvDM9H) and in TinkerPop's [JIRA](https://issues.apache.org/jira/browse/TINKERPOP-2878). I'd written on this topic once before in [Use of local()](https://stephen.genoprime.com/snippet/2020/04/25/snippet-10.html) but it perhaps begs a further revisit. The [example that arose from Discord](https://www.answeroverflow.com/m/1095833771883888862) helped inspire this post as it was sufficiently primitive to hopefully clarify usage. 
+
+## A Primitive Example: Understanding local() Behavior
 
 Here's the primitive example:
 
@@ -25,7 +29,11 @@ gremlin> g.inject([1,2],[1],[1,2]).local(unfold().count())
 ==>1
 {% endhighlight %}
 
-We'd expect the last traversal to behave the same as the other two. The strangest looking thing here is that there are just two results, when we clearly started with three lists that were given to `inject()`. The `local()`-step covers a fairly narrow and yet potentially helpful use case, in that it is meant to be used in cases where you want object-local computations. By object-local we're talking about a particular object and not the objects in the stream as a whole. As a result, the two `[1,2]` lists which have an equality end up counting to the same object and we get "4". Demonstrated another way:
+We'd expect the last traversal to behave the same as the other two. The strangest looking thing here is that there are just two results, when we clearly started with three lists that were given to `inject()`.
+
+## What Does Object-Local Processing Mean?
+
+The `local()`-step covers a fairly narrow and yet potentially helpful use case, in that it is meant to be used in cases where you want object-local computations. By object-local we're talking about a particular object and not the objects in the stream as a whole. As a result, the two `[1,2]` lists which have an equality end up counting to the same object and we get "4". Demonstrated another way:
 
 {% highlight text %}
 gremlin> g.inject([1],[1],[1]).local(unfold().count())
@@ -33,5 +41,7 @@ gremlin> g.inject([1],[1],[1]).local(unfold().count())
 gremlin> g.inject([1,2],[1,2],[1,2]).local(unfold().count())
 ==>6
 {% endhighlight %}
+
+## When to Use local()—and When Not To
 
 When I see a traversal with `local()` in it, I always question if it is being used properly. More often than not, folks tend to use `local()` when they instead intend `Scope.local` processing, as in `count(local)` in this case or a `map()` or `flatMap()` operation. Always prefer those options, unless you are sure that object-local processing is what you need in your computation. 

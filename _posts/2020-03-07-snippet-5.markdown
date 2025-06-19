@@ -7,6 +7,8 @@ graph: modern
 version: 3.4.6
 ---
 
+## Understanding Map Keys in Gremlin Results
+
 Gremlin can generate `Map` instances that have keys that are themselves of type `Map`. This situation is often encountered when doing a `groupCount()` using a graph element like `Vertex` and then converting that `Vertex` to a `Map`:
 
 {% highlight plaintext %}
@@ -21,7 +23,11 @@ gremlin> g.V().both().groupCount().by(elementMap()).unfold()
 ==>{id=6, label=person, name=peter, age=35}=1
 {% endhighlight %}
 
+## Challenges Across Programming Languages
+
 Unfortunately, not every programming language allows a `Map` to have such a key and, as a result, a traversal that works perfectly well in the Gremlin Console (using Groovy) ends up not working in another programming language despite the Gremlin being identical. Python is one such language that has this limitation. In Python a `dict` can only have a key that is a hashable type and `dict` itself is not. As a result a `TypeError` occurs in Python when trying to execute that previous traversal. 
+
+## Adapting Results for Language Compatibility
 
 Luckily, Gremlin is a flexible language with many steps that can help you [manipulate collections][recipes]. It merely takes a bit of creativity to solve the problem. For Python and this particular case, we just need to transform the result to something that Python can handle - a `list` of `list`:
 
