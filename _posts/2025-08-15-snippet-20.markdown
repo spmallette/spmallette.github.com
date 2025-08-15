@@ -1,0 +1,68 @@
+---
+layout: snippet-post
+title:  "constant() is Not inject() – A Follow-Up"
+date:   2025-08-15
+categories: snippet
+graph: modern
+version: 3.7.3
+---
+
+# inject() and constant() Revisited
+
+In my previous blog post, ["constant() Is Not inject()"](https://stephen.genoprime.com/snippet/2020/02/15/snippet-2.html), I explored the functional and conceptual differences between Gremlin's `constant()` and `inject()` steps. At first glance, they both appear to simply stick new values into a traversal, but we saw that their true behaviors are quite distinct. 
+
+Since then, a new use case involving `addV` has come up that further underscores just how differently these two steps operate, especially when you try to use them in places you might not expect.
+
+## Revisiting addV Scenarios
+
+Suppose you want to add a vertex with a dynamic label via a traversal. You might be tempted to use `inject()` to push that label into your stream, but you’ll quickly find the outcome is not what you expect. 
+
+```text
+gremlin> g.addV(__.inject('x'))
+class java.lang.Boolean cannot be cast to class java.lang.String (java.lang.Boolean and java.lang.String are in module java.base of loader 'bootstrap')
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+```
+
+Instead, you’d likely want:
+
+```text
+g.addV(constant('person'))
+```
+
+This approach works — and it does so because `constant()` transforms each traverser to `'person'`, yielding the right label at the right time.
+
+## The Side-Effect Nature of inject()
+
+The confusion often stems from the fact that `inject()` behaves as a side-effect: it can insert one or more objects into the stream regardless of what's already there, without transforming the current traverser. This can lead to potentially unexpected results when you chain multiple `inject()` calls. Consider:
+
+```text
+gremlin> g.inject(0).inject('x')
+==>x
+==>0
+gremlin> g.inject(0).constant('x')
+==>x
+gremlin> g.inject(0).inject('x').inject('y')
+==>y
+==>x
+==>0
+gremlin> g.inject(0).inject('x').constant('y')
+==>y
+==>y
+```
+
+With repeated `inject()` calls, each new invocation adds more items to the stream, but it doesn’t operate as a per-traverser replacement. On the other hand, `constant()` maps everything passing through to a new value.
+
+For the case with `addV(inject('x'))` to set the label, it might be helpful to think of `addV()` more abstractly as a map-step where the incoming traverser is transformed to a new `Vertex`. We can demonstrate that as follows:
+
+```text
+gremlin> g.inject(0).map(__.inject('x'))
+==>0
+gremlin> g.inject(0).flatMap(__.inject('x'))
+==>0
+==>x
+```
+
+Note that the `map()` step ends up passing through the "0" because `inject('x')` passes that object through as the first item in its stream. A map-step will only ever take that first traverser. For sake of clarity, the second Gremlin traversal uses `flatMap()` and exhausts the entire child stream and therefore produces the "0" and the "x". 
+
+Generally speaking, think of `inject()` as best for inserting or seeding values into a traversal flow and consider `constant()` as best for overwriting whatever traversers exist at any point in your pipeline.
