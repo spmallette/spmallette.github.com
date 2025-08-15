@@ -7,13 +7,13 @@ graph: modern
 version: 3.7.3
 ---
 
-# inject() and constant() Revisited
+## inject() and constant() Revisited
 
 In my previous blog post, ["constant() Is Not inject()"](https://stephen.genoprime.com/snippet/2020/02/15/snippet-2.html), I explored the functional and conceptual differences between Gremlin's `constant()` and `inject()` steps. At first glance, they both appear to simply stick new values into a traversal, but we saw that their true behaviors are quite distinct. 
 
 Since then, a new use case involving `addV` has come up that further underscores just how differently these two steps operate, especially when you try to use them in places you might not expect.
 
-## Revisiting addV Scenarios
+## addV Scenarios
 
 Suppose you want to add a vertex with a dynamic label via a traversal. You might be tempted to use `inject()` to push that label into your stream, but you’ll quickly find the outcome is not what you expect. 
 
