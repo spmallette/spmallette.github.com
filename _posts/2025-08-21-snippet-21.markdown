@@ -1,0 +1,44 @@
+---
+layout: snippet-post
+title:  "Semantics of times(0)"
+date:   2025-08-21
+categories: snippet
+graph: modern
+version: 3.7.3
+---
+
+The `repeat()` step in Gremlin has some noteworthy behavior when used with `times(0)`. Most of us intuitively expect that `times(1)` means “do it once” and `times(0)` means “skip it completely.” But depending on *where* you specify `times()`, the semantics are not quite what you might first imagine.
+
+Consider the following Gremlin Console session:
+
+{% highlight text %}
+gremlin> g.V().repeat(out().limit(1)).times(1)
+==>v[3]
+gremlin> g.V().repeat(out().limit(1)).times(0)
+==>v[3]
+gremlin> g.V().times(1).repeat(out().limit(1))
+==>v[3]
+gremlin> g.V().times(0).repeat(out().limit(1))
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[6]
+{% endhighlight %}
+
+At first glance, `times(1)` behaves exactly as expected in both positions: the traversal applies the repeat once. No surprises there.
+
+Where things get interesting is with `times(0)`:
+
+* **With `repeat(...).times(0)`** - You get the same result as `times(1)`. This is because when `times()` is applied *after* `repeat()`, its semantics are handled like a `do/while`. That is, the `repeat()` always executes once before the "how many times?" condition is enforced. So even though you asked for "0 times," the traversal still enters the `repeat()` a first time.
+
+* **With `times(0).repeat(...)`** – The behavior flips. Here the traversal sees the `times(0)` before entering the repeat, giving it `while/do` semantics instead. Since the condition is "zero times," the traverser never enters `repeat()`. Instead, it simply passes through unchanged. That’s why, in this case, you just get the original set of vertices back.
+
+So the placement of `times()` fundamentally changes the control flow:
+
+- **Postfix (`repeat(...).times(n)`)** - `do/while` semantics (always one iteration, then check).
+- **Prefix (`times(n).repeat(...)`)** - `while/do` semantics (check first, then maybe iterate).
+
+This quirk in Gremlin’s semantics isn’t a bug, but it can be surprising to discover that sometimes `times(0)` doesn’t actually mean “zero.”
+
