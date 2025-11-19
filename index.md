@@ -2,7 +2,7 @@
 # Feel free to add content and custom Front Matter to this file.
 # To modify the layout, see https://jekyllrb.com/docs/themes/#overriding-theme-defaults
 
-layout: home
+layout: page
 ---
 <style type="text/css">
 .image-left {
@@ -32,3 +32,21 @@ which hopefully elevates your ability to write complex graph traversals.
 [alldocs]: https://tinkerpop.apache.org/docs/current/
 [practical-gremlin]: http://kelvinlawrence.net/book/Gremlin-Graph-Guide.html
 [me]: about/
+
+<h2>Recent Posts</h2>
+
+<ul class="post-list">
+  {% for post in site.posts limit:5 %}
+  <li>
+    <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
+    <h3>
+      <a class="post-link" href="{{ post.url | relative_url }}">{{ post.title }}</a>
+    </h3>
+  </li>
+  {% endfor %}
+  {% if site.posts.size == 0 %}
+  <li>No posts yet.</li>
+  {% endif %}
+  </ul>
+
+<p><a href="{{ '/posts/' | relative_url }}">All posts →</a></p>
