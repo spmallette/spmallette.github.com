@@ -1,0 +1,28 @@
+/* Minimal, conservative tweaks layered on top of Minima */
+
+/* Compact post list spacing without altering Minima colors/typography */
+.post-list > li { margin-bottom: 0.8rem; }
+.post-list h3 { margin: 0.2rem 0; }
+.post-synopsis {
+  margin: 0.1rem 0 0.1rem;
+  font-size: 0.95rem; /* subtle hierarchy under title */
+}
+.post-meta {
+  font-size: 0.9rem; /* slightly smaller dates for a lighter feel */
+}
+
+/* Gentle link refinements without changing colors */
+.post-list .post-link {
+  text-underline-offset: 2px;
+  text-decoration-thickness: from-font;
+}
+
+/* Accessible focus rings using the current text color */
+a:focus-visible, button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Keep images responsive; retain helper for homepage image */
+img { max-width: 100%; height: auto; }
+.image-left { display: block; margin-left: auto; margin-right: auto; float: right; width: 170px; }

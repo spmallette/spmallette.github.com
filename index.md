@@ -4,21 +4,6 @@
 
 layout: page
 ---
-<style type="text/css">
-.image-left {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  float: right;
-  width: 170px;
-}
-</style>
-<style type="text/css">
-/* tighten spacing for post list synopses on homepage */
-.post-list > li { margin-bottom: 0.8rem; }
-.post-list h3 { margin: 0.2rem 0; }
-.post-synopsis { margin: 0.15rem 0 0.15rem; color: #555; }
-</style>
 ![Rexster](images/rexster-milkbone.png){: .image-left} There is a lot of documentation available for the 
 [Apache TinkerPop&trade;][tinkerpop-home] graph computing framework. There is the project's 
 [Reference Documentation][refdocs] as well as its [tutorials and recipes][alldocs]. There is the freely available 
