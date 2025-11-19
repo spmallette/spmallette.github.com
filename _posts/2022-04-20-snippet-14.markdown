@@ -5,11 +5,13 @@ date:   2022-04-20
 categories: snippet
 graph: modern
 version: 3.5.3
+synopsis: >-
+  Advocates for readable if-then patterns in Gremlin, comparing `coalesce()`, `choose()`, `sideEffect()` and `optional()`.
 ---
 
 ## The Importance of Gremlin Readability
 
-Getting good at Gremlin is as much about writing readable and intutive traversals as it is writing performant ones. Gremlin has a lot of ways to accomplish the same goal and you can easily write two equivalent traversals with a wildly different set of steps. It is also easy to write a working query that uses steps in ways that do not easily convey meaning and intent to someone who comes along and reads it later - and that person may be yourself a year or more down the line. As such, I'm a big proponent of Gremlin readability and often question if the proper steps and patterns are being used even if my traversal is working
+Getting good at Gremlin is as much about writing readable and intuitive traversals as it is writing performant ones. Gremlin has a lot of ways to achieve the same goal, and you can easily write two equivalent traversals with a wildly different set of steps. It is also easy to write a working query that uses steps in ways that do not easily convey meaning and intent to someone who comes along and reads it later - and that person may be yourself a year or more down the line. As such, I'm a big proponent of Gremlin readability and often question if the proper steps and patterns are being used even if my traversal is working
 
 Here's a simple example:
 
@@ -30,7 +32,6 @@ This traversal succeeds in its goal, but it makes a bit of an unexpected use of 
 
 Since we have an if-then pattern, then perhaps it would be more explicit and readable to present it that way with `choose()` which is designed for that purpose:
 
-
 {% highlight text %}
 gremlin> g.V(2).choose(hasNot('k'), 
 ......1>               property('k','v'))
@@ -41,7 +42,7 @@ gremlin> g.V(2).elementMap()
 
 ## Emphasizing Side-Effect and Intent with SideEffect and Optional
 
-The above example makes the if-then far more explicit and we can more immediately recognize that section of Gremlin as "*if* there is no 'k' property *then* it should be added". While the traversal readability has improved, it could still be modified to convey more about the intent. The primary purpose of the if-then pattern is to trigger a side-effect of adding a property key, which is really easy to read as a single traversal of `hasNot('k').property('k','v')`. It's nice to be able to immediately know that a particular traversal is meant purely for side-effect purposes as your mind can block out the entire section of a traversal, no matter how complex it is, knowing that it will not alter the current traverser:
+The above example makes the if-then far more explicit, and we can more immediately recognize that section of Gremlin as "*if* there is no 'k' property *then* it should be added". While the traversal readability has improved, it could still be modified to convey more about the intent. The primary purpose of the if-then pattern is to trigger a side-effect of adding a property key, which is really easy to read as a single traversal of `hasNot('k').property('k','v')`. It's nice to be able to immediately know that a particular traversal is meant purely for side-effect purposes as your mind can block out the entire section of a traversal, no matter how complex it is, knowing that it will not alter the current traverser:
 
 {% highlight text %}
 gremlin> g.V(2).sideEffect(hasNot('k').property('k','v'))

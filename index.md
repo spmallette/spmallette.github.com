@@ -42,6 +42,9 @@ which hopefully elevates your ability to write complex graph traversals.
     <h3>
       <a class="post-link" href="{{ post.url | relative_url }}">{{ post.title }}</a>
     </h3>
+    {% if post.synopsis %}
+    <p class="post-synopsis">{{ post.synopsis }}</p>
+    {% endif %}
   </li>
   {% endfor %}
   {% if site.posts.size == 0 %}

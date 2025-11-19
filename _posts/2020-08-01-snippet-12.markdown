@@ -5,6 +5,8 @@ date:   2020-08-01
 categories: snippet
 graph: modern
 version: 3.4.7
+synopsis: >-
+  Reviews alternatives to Gremlin’s `subgraph()` step for non-JVM languages, focusing on edge list extraction.
 ---
 
 ## The Challenge of Subgraphing in Gremlin

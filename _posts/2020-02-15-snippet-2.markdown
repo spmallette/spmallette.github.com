@@ -5,6 +5,8 @@ date:   2020-02-15
 categories: snippet
 graph: modern
 version: 3.4.6
+synopsis: >-
+  Clarifies the practical differences between Gremlin’s `constant()` and `inject()` steps for value transformation.
 ---
 
 ## Understanding the Similarities and Differences

@@ -4,6 +4,8 @@ title:  "Inserting a Vertex Using a Map"
 date:   2020-03-28
 categories: snippet
 version: 3.4.6
+synopsis: >-
+  Explains efficient ways to insert vertex properties in Gremlin using Maps and advocates for simplifying with a DSL.
 ---
 
 ## Property Assignment: Traditional vs. Map-Based Approaches

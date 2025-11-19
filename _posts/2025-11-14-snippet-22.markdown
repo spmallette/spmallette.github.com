@@ -4,6 +4,8 @@ title:  "TinkerPop 3.8.0 Reflections"
 date:   2025-11-14
 categories: snippet
 version: 3.8.0
+synopsis: >-
+  Reflects on TinkerPop 3.8.0’s release strategy, bridging stable Gremlin semantics with future-focused upgrades.
 ---
 
 [Apache TinkerPop](https://tinkerpop.apache.org/) recently announced the joint releases of 3.7.5 and 3.8.0. I think that makes the total number of releases of 3.x under the [Apache Software Foundation](https://www.apache.org/) to be around 75 since 2015. If you follow TinkerPop then you know that the versioning scheme has been such that we allow breaking changes along minor versions and that the major version is a bit more symbolic than a sticking point of semantic versioning. So, while it seems as though TinkerPop has largely just been in a maintenance mode for 3.x for a decade, there's actually been a great many new features and improvements that have landed along the way in various releases. 

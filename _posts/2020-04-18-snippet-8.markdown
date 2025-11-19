@@ -5,6 +5,8 @@ date:   2020-04-18
 categories: snippet
 graph: modern
 version: 3.4.6
+synopsis: >-
+  Shows how Gremlin’s `profile()` step exposes query optimization potential and performance issues around indices.
 ---
 
 ## The Price of Portability in TinkerPop

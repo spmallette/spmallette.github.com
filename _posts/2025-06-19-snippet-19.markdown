@@ -5,6 +5,8 @@ date:   2025-06-19
 categories: snippet
 graph: modern
 version: 3.7.3
+synopsis: >-
+  Warns against the anti-pattern of unique vertex labels in graph databases and advocates for categorical labeling.
 ---
 
 ## Understanding Vertex Labels in Graph Databases

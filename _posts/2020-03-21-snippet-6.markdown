@@ -4,6 +4,8 @@ title:  "Grouping Edge Directions"
 date:   2020-03-21
 categories: snippet
 version: 3.4.6
+synopsis: >-
+  Demonstrates techniques for grouping and analyzing edge directions in Gremlin to understand message flows.
 ---
 
 ## Setting Up the Example Data

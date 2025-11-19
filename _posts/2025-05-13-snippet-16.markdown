@@ -5,6 +5,8 @@ date:   2025-05-13
 categories: snippet
 graph: modern
 version: 3.7.3
+synopsis: >-
+  Explains the behavior of `tree()` node equality in Gremlin and how unique nodes shape traversal output structure. 
 ---
 
 ## Understanding the tree() Step in Gremlin

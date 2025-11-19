@@ -5,6 +5,8 @@ date:   2020-02-21
 categories: snippet
 graph: modern
 version: 3.4.6
+synopsis: >-
+  Demystifies Gremlin’s `fold()` step and illustrates its importance in stream reduction and transformation.  
 ---
 
 ## Understanding fold() and unfold() in Gremlin

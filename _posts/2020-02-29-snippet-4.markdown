@@ -4,6 +4,8 @@ title:  "Static and Dynamic Map Instances"
 date:   2020-02-29
 categories: snippet
 version: 3.4.6
+synopsis: >-
+  Compares static vs dynamic Map creation in Gremlin and how object equality impacts traversal results.
 ---
 
 ## Understanding Map Creation in Gremlin

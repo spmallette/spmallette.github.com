@@ -5,6 +5,8 @@ date:   2023-04-13
 categories: snippet
 graph: modern
 version: 3.6.2
+synopsis: >-
+  Revisits the `local()` step in Gremlin, clarifying its use case amid common confusion with `Scope.local`. 
 ---
 
 ## Why Revisit the local()-step?

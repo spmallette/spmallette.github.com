@@ -5,6 +5,8 @@ date:   2020-04-25
 categories: snippet
 graph: crew
 version: 3.4.6
+synopsis: >-
+  Distinguishes Gremlin’s `local()` step from `map()` and `flatMap()`, highlighting its role in object-local processing.
 ---
 
 ## Understanding the local() Step

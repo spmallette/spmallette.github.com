@@ -5,6 +5,8 @@ date:   2025-08-21
 categories: snippet
 graph: modern
 version: 3.7.3
+synopsis: >-
+  Unpacks subtle differences in Gremlin’s repeat step when `times(0)` is used
 ---
 
 The `repeat()` step in Gremlin has some noteworthy behavior when used with `times(0)`. Most of us intuitively expect that `times(1)` means “do it once” and `times(0)` means “skip it completely.” But depending on *where* you specify `times()`, the semantics are not quite what you might first imagine.
