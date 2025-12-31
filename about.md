@@ -4,9 +4,10 @@ title: About
 permalink: /about/
 ---
 
-Stephen Mallette has been one of the core contributors to the [Apache TinkerPop&trade;](https://tinkerpop.apache.org) open
-source graph computing framework since 2009 and is a former Project Management Committee 
-(PMC) Chair of the project. 
+A core contributor and long-time maintainer of [Apache TinkerPop&trade;](https://tinkerpop.apache.org), Stephen Mallette
+has helped define the standards and architecture behind some of the world’s most prominent graph systems. His work on 
+the TinkerPop framework and the Gremlin query language has powered major products including Titan, DataStax Graph, and 
+currently [Amazon Neptune](https://aws.amazon.com/neptune/), enabling graph computing at scale across industries.
 
 ## Articles & Presentations
 
