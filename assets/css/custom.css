@@ -26,3 +26,12 @@ a:focus-visible, button:focus-visible {
 /* Keep images responsive; retain helper for homepage image */
 img { max-width: 100%; height: auto; }
 .image-left { display: block; margin-left: auto; margin-right: auto; float: right; width: 170px; }
+
+/* Social Icons */
+.social-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  vertical-align: text-top;
+  margin-right: 5px;
+}

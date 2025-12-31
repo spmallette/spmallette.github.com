@@ -1,0 +1,26 @@
+<ul class="social-media-list">
+  {%- if site.github_username -%}
+    <li><a href="https://github.com/{{ site.github_username| cgi_escape | escape }}"><img class="social-icon" src="{{ '/assets/images/social/github.png' | relative_url }}" alt="GitHub"> <span class="username">{{ site.github_username| escape }}</span></a></li>
+  {%- endif -%}
+
+  {%- if site.x_username -%}
+    <li><a href="https://www.x.com/{{ site.x_username| cgi_escape | escape }}"><img class="social-icon" src="{{ '/assets/images/social/x.png' | relative_url }}" alt="X"> <span class="username">{{ site.x_username }}</span></a></li>
+  {%- endif -%}
+
+  {%- if site.mastodon_username -%}
+    {%- assign mastodon_parts = site.mastodon_username | split: "@" -%}
+    {%- if mastodon_parts.size == 3 -%}
+      {%- assign mastodon_user = mastodon_parts[1] -%}
+      {%- assign mastodon_host = mastodon_parts[2] -%}
+      <li><a href="https://{{ mastodon_host }}/@{{ mastodon_user }}"><img class="social-icon" src="{{ '/assets/images/social/mastodon.png' | relative_url }}" alt="Mastodon"> <span class="username">{{ site.mastodon_username }}</span></a></li>
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- if site.bluesky_username -%}
+    <li><a href="https://bsky.app/profile/{{ site.bluesky_username| cgi_escape | escape }}"><img class="social-icon" src="{{ '/assets/images/social/bluesky.png' | relative_url }}" alt="Bluesky"> <span class="username">{{ site.bluesky_username }}</span></a></li>
+  {%- endif -%}
+
+  {%- if site.linkedin_username -%}
+    <li><a href="https://www.linkedin.com/in/{{ site.linkedin_username| cgi_escape | escape }}"><img class="social-icon" src="{{ '/assets/images/social/linkedin.png' | relative_url }}" alt="LinkedIn"> <span class="username">LinkedIn</span></a></li>
+  {%- endif -%}
+</ul>

@@ -18,8 +18,11 @@ description: >- # this means to ignore newlines until "baseurl:"
   stephen mallette - building graph technology
 baseurl: ""
 url: "http://stephen.genoprime.com" 
-twitter_username: spmallette
+x_username: spmallette
 github_username:  spmallette
+mastodon_username: "@spmallette@fosstodon.org"
+bluesky_username: spmallette.bsky.social
+linkedin_username: stephen-mallette-56934a1
 google_analytics: UA-22004389-1
 
 # Build settings

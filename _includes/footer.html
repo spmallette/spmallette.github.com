@@ -1,5 +1,5 @@
 <footer class="site-footer h-card">
-  <data class="u-url" href="{{ "/" | relative_url }}"></data>
+  <data class="u-url" href="{{ '/' | relative_url }}"></data>
 
   <div class="wrapper">
 
@@ -7,9 +7,7 @@
       <div class="footer-col">
         <p class="feed-subscribe">
           <a href="{{ site.feed.path | default: 'feed.xml' | absolute_url }}">
-            <svg class="svg-icon orange">
-              <use xlink:href="{{ 'assets/minima-social-icons.svg#rss' | relative_url }}"></use>
-            </svg><span>Subscribe</span>
+            <img class="social-icon" src="{{ '/assets/images/social/rss.png' | relative_url }}" alt="RSS"><span>Subscribe</span>
           </a>
         </p>
       </div>
@@ -23,7 +21,7 @@
 
       <link rel="stylesheet" href="{{ '/assets/css/custom.css' | relative_url }}">
       <div style="font-size:small">
-        <p>© Copyright 2017-2025 Stephen Mallette</p>
+        <p>© Copyright 2017-2026 Stephen Mallette</p>
       </div>
   </div>
 
