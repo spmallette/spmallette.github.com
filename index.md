@@ -4,7 +4,7 @@
 
 layout: page
 ---
-![Rexster](images/rexster-milkbone.png){: .image-left} There is a lot of documentation available for the 
+![Rexster](assets/images/rexster-milkbone.png){: .image-left} There is a lot of documentation available for the 
 [Apache TinkerPop&trade;][tinkerpop-home] graph computing framework. There is the project's 
 [Reference Documentation][refdocs] as well as its [tutorials and recipes][alldocs]. There is the freely available 
 online book [Practical Gremlin][practical-gremlin] which is a excellent resource for learning the Gremlin language. 
