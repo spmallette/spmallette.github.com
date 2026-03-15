@@ -4,7 +4,7 @@ title:  "TinkerPop 3.8.0 Reflections"
 date:   2025-11-14
 categories: snippet
 version: 3.8.0
-synopsis: >-
+description: >-
   Reflects on TinkerPop 3.8.0’s release strategy, bridging stable Gremlin semantics with future-focused upgrades.
 ---
 

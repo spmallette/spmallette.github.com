@@ -4,7 +4,7 @@ title:  "Thinking in VertexPrograms"
 date:   2020-09-26
 categories: snippet
 version: 3.4.8
-synopsis: >-
+description: >-
   Discusses OLAP-style Gremlin and custom VertexProgram implementations for specialized graph analytics.  
 ---
 

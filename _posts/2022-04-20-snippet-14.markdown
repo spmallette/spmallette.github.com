@@ -5,7 +5,7 @@ date:   2022-04-20
 categories: snippet
 graph: modern
 version: 3.5.3
-synopsis: >-
+description: >-
   Advocates for readable if-then patterns in Gremlin, comparing `coalesce()`, `choose()`, `sideEffect()` and `optional()`.
 ---
 

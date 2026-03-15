@@ -17,7 +17,8 @@ title: stephen mallette
 description: >- # this means to ignore newlines until "baseurl:"
   stephen mallette - building graph technology
 baseurl: ""
-url: "http://stephen.genoprime.com" 
+url: "https://stephen.genoprime.com" 
+logo: /assets/images/gremlin-snippets.png
 x_username: spmallette
 github_username:  spmallette
 mastodon_username: "@spmallette@fosstodon.org"
@@ -29,6 +30,7 @@ markdown: kramdown
 theme: minima
 plugins:
   - jekyll-feed
+  - jekyll-sitemap
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list

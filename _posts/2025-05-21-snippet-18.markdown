@@ -5,7 +5,7 @@ date:   2025-05-21
 categories: snippet
 graph: modern
 version: 3.7.3
-synopsis: >-
+description: >-
   Differentiates eager and lazy `tree()` semantics in Gremlin.
 ---
 

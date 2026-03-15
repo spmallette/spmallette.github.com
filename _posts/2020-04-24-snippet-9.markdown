@@ -5,7 +5,7 @@ date:   2020-04-24
 categories: snippet
 graph: modern
 version: 3.4.6
-synopsis: >-
+description: >-
   Examines Gremlin’s `simplePath()` for cycle filtering and advanced path control using `from` and `to` modulators.
 ---
 

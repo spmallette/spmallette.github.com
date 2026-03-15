@@ -4,7 +4,7 @@ title:  "Removing Backtracking"
 date:   2020-06-20
 categories: snippet
 version: 3.4.7
-synopsis: >-
+description: >-
   Encourages Gremlin query refactoring by removing excessive backtracking for clarity and performance.
 ---
 

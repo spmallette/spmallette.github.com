@@ -5,7 +5,7 @@ date:   2020-02-08
 categories: snippet
 graph: modern
 version: 3.4.6
-synopsis: >-
+description: >-
   Explores Gremlin’s `choose()` step and new handling of nulls for flexible conditional logic in graph traversals. 
 ---
 

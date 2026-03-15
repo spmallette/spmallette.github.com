@@ -5,7 +5,7 @@ date:   2020-03-07
 categories: snippet
 graph: modern
 version: 3.4.6
-synopsis: >-
+description: >-
   Highlights language-specific issues of using Maps as keys in Gremlin and practical workarounds for compatibility.
 ---
 

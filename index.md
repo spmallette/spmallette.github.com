@@ -33,8 +33,8 @@ which hopefully elevates your ability to write complex graph traversals.
     <h3>
       <a class="post-link" href="{{ post.url | relative_url }}">{{ post.title }}</a>
     </h3>
-    {% if post.synopsis %}
-    <div class="post-synopsis">{{ post.synopsis | markdownify }}</div>
+    {% if post.description %}
+    <div class="post-synopsis">{{ post.description | markdownify }}</div>
     {% endif %}
   </li>
   {% endfor %}

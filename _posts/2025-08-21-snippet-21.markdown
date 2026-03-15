@@ -5,7 +5,7 @@ date:   2025-08-21
 categories: snippet
 graph: modern
 version: 3.7.3
-synopsis: >-
+description: >-
   Unpacks subtle differences in Gremlin’s repeat step when `times(0)` is used
 ---
 

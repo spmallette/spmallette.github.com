@@ -5,7 +5,7 @@ date:   2025-08-15
 categories: snippet
 graph: modern
 version: 3.7.3
-synopsis: >-
+description: >-
   Distills the core distinction between Gremlin’s `constant()` and `inject()`.
 ---
 
