@@ -1,30 +1,29 @@
 ---
-layout: snippet-post
+layout: article-post
 title:  "Gremlin goes to Gastown"
+image: /assets/images/gremlin-goes-to-gastown.png
 date:   2026-04-03
 categories: snippet
 version: 4.0.0-beta.2
 description: >-
-  Using Gastown, a multi-agent workspace manager, to build Gremlator for Apache Tinkerpop.
+  Using Gastown, a multi-agent workspace manager, to build Gremlator for Apache TinkerPop.
 ---
 
 For some months now, I've been reading about ways to scale my usage of AI coding agents like [Kiro](https://kiro.dev/) and [Claude Code](https://claude.com/product/claude-code) while also seeking greater efficiencies in their operations in terms of the time taken to produce their output. I've kept finding myself drawn more and more to [Gastown](https://github.com/gastownhall/gastown), a multi-agent workspace manager. I decided to try a small experiment to get a feel for how development with it compares to a standard coding agent session and, in that experiment, bring [Gremlin](https://tinkerpop.apache.org/gremlin.html) development into Gastown for a bit to see what I could successfully build.
 
-![Gremlin](/assets/images/gremlin-goes-to-gastown.png)
-
 ## Why Gastown, and why Gremlator?
 
-Since learning about Gastown around the time of its [announcement](https://steve-yegge.medium.com/welcome-to-gas-town-4f25ee16dd04) at the start of this year, I've been quietly following and picking through the documentation. In some ways, it's use of personas like deacons, polecats and mayors to represent elements of its ecosystem reminded me of TinkerPop, with its characters like Gremlin, Rexster, and Blueprints, that each helped you visualize some component of a complex system making it a bit easier to learn. The fun characters aside, I was attracted to what it offered conceptually: an opinionated way to turn “a bunch of coding agents” into a coordinated, auditable workflow where planning, execution, and attribution are all first-class data. 
+Since learning about Gastown around the time of its [announcement](https://steve-yegge.medium.com/welcome-to-gas-town-4f25ee16dd04) at the start of this year, I've been quietly following and picking through the documentation. In some ways, its use of personas like deacons, polecats and mayors to represent elements of its ecosystem reminded me of TinkerPop, with its characters like Gremlin, Rexster, and Blueprints, that each helped you visualize some component of a complex system making it a bit easier to learn. The fun characters aside, I was attracted to what it offered conceptually: an opinionated way to turn “a bunch of coding agents” into a coordinated, auditable workflow where planning, execution, and attribution are all first-class data. 
 
-I'm further fascinated by its use of [Beads](https://github.com/gastownhall/beads) as a means for providing memory to coding agents. I tend to think that Beads as a standalone tool could be extremely useful in providing better structure to agents given its use of a depenendecy-aware graph for driving operations as opposed to just markdown text. 
+I'm further fascinated by its use of [Beads](https://github.com/gastownhall/beads) as a means for providing memory to coding agents. I tend to think that Beads as a standalone tool could be extremely useful in providing better structure to agents given its use of a dependency-aware graph for driving operations as opposed to just markdown text. 
 
 [Gremlator](https://www.gremlator.com/) was a good test case. TinkerPop already has a Gremlator web app that lets you translate Gremlin between languages, but the original implementation was a Java/JavaScript hybrid: the frontend talked to Java `Translator` classes behind the scenes, which required a server. Now that we have corresponding translators implemented in `gremlin-javascript` for 4.0.0-beta.2, it should be possible to rebuild Gremlator as a pure JavaScript app using the same React/Webpack infrastructure that already powers [Gremlint](https://gremlint.com).
 
 That combination of non-trivial feature work, a concrete before/after architecture, and a real codebase made Gremlator a good choice for getting Gremlin into Gastown.
 
-## Two plans, one problem
+## Comparing the plans
 
-To keep the experiment fair, I used essentially the same kickoff prompt twice: once through Gastown’s mayor, and once in a plain Claude session. While I use Kiro quite extensively, I chose Claude since it works out-of-the-box with Gastown and wanted a to use the same tool. Gastown naturally "thinks" in Beads and I asked my standalone Claude session to do the same. In both cases, I received a beads-style dependency graph and a gated work plan for rebuilding Gremlator as a pure JavaScript app alongside Gremlint.
+In my comparison, I used essentially the same kickoff prompt twice: once through Gastown’s mayor, and once in a plain Claude session. While I use Kiro quite extensively, I chose Claude since it works out-of-the-box with Gastown and wanted to use the same tool. Gastown naturally "thinks" in Beads and I asked my standalone Claude session to do the same. In both cases, I received a Beads-style dependency graph and a gated work plan for rebuilding Gremlator as a pure JavaScript app.
 
 What’s striking is how similar the two resulting graphs were. Both decomposed the work into roughly the same backbone:
 
@@ -36,26 +35,26 @@ What’s striking is how similar the two resulting graphs were. Both decomposed 
 
 Each plan also introduced gates in similar places: an initial gate for project skeletons and generation scripts, a big parallel fan-out for UI and state components, then a single-agent integration gate before build and docs. In other words, given the same description of the problem, both "town" and "single agent" converged on almost the same graph.
 
-The differences are mostly about how you’re meant to run that plan. The Gastown graph is written in the language of its ecosystem: beads refer to agent owners, gates help control workflows, and assignments that assume mayors and polecats will carry out the work. The Claude-only graph talks about “single agent” versus “three agents in parallel,” but those are just abstract ideas in prose that may or may not carry out as such without your supervision.
+The differences are mostly about how you’re meant to run that plan. The Gastown graph is written in the language of its ecosystem: Beads refer to agent owners, gates help control workflows, and assignments that assume mayors and polecats will carry out the work. The Claude-only graph talks about “single agent” versus “three agents in parallel,” but those are just abstract ideas in prose that may or may not carry out as such without your supervision.
 
-There’s also a difference in tempo. Gastown produced its graph in under ten minutes, while the single Claude session took on the order of thirty minutes of consideration to reach a similar place and the former did not need the same level of back-forth prompting as the latter.
+There’s also a difference in tempo. Gastown produced its graph in under ten minutes, while the single Claude session took on the order of thirty minutes of consideration to reach a similar place. In addition, Gastown did not need the same level of back-and-forth prompting as Claude did to produce the same plan. I've not been able to confirm if this speed difference has anything to do with Gastown itself or not. 
 
-So at the planning level, the experiment didn’t show that Gastown finds some completely different structure for the work. It showed that it can get to a town-shaped version of the same plan faster, with more of the execution details and role assumptions embedded in the beads, whereas a single Claude chat gives you a similar graph but leaves orchestration and discipline up to you.
+So at the planning level, the experiment didn’t show that Gastown finds some completely different structure for the work. It showed that it can get to a town-shaped version of the same plan faster, with more of the execution details and role assumptions embedded in the Beads, whereas a single Claude chat gives you a similar graph but leaves orchestration and discipline up to you.
 
 ## What I learned from the comparison
 
-In reflecting on my experiment, I think Gastown clearly helped in the following ways:
+In reflecting on my experiment, I think Gastown stood out in the following ways:
 
-- **Faster, richer planning.** With essentially the same prompt, Gastown produced a detailed, executable bead graph in about a third of the time.
-- **Native orchestration.** The gates/polecats/mayor setup maps directly onto how work is actually scheduled and executed, instead of living as a suggestion in a markdown doc.
+- **Faster, richer planning.** With essentially the same prompt, Gastown produced a detailed, executable Bead graph in about a third of the time.
+- **Native orchestration.** The gates/polecats/mayor setup maps directly onto how work is actually scheduled and executed, instead of living as a suggestion in a markdown document.
 - **Persistent design memory.** Native Beads usage backed by the [Dolt](https://www.dolthub.com/) version controlled database, appear to provide a good base for a long-term project memory that will allow recall of fine-grained implementation decisions.
 
-On the other hand, Gastown also raised concerns:
+On the other hand, Gastown also had me considering:
 
-- **Idle burn.** A "live" town is like a running cluster: it’s doing things even when you’re not actively watching, and your credit bill reflects that.
+- **Idle burn.** A "live" town is like a running cluster in that it is doing things even when you’re not actively watching, and your credit bill reflects that.
 - **Complexity overhead.** You trade a simple "me and my agent" relationship for something with many moving parts that can operate in ways that feel opaque when you're getting started.
 - **Moving target factor.** Gastown is a young, fast-moving project where features and conventions are continuously evolving, so you may need to be ready to handle some sharp edges.
 
 ## Where this is going next
 
-This Gremlator experiment was deliberately modest: one feature, one repo, a handful of gates. Gastown used its plan to generate Gremlator in a few minutes with only some minor intervention at the end where it didn't have a deployment script quite right. That feature will be part of the next 4.0.0 release to land after Beta 2. The experience was enough to convince me that Gastown (and Beads itself) are definitely worth further investigation.
+This Gremlator experiment was deliberately modest. Gastown used its plan to generate Gremlator in a few minutes with only some minor intervention at the end where it didn't have a deployment script quite right. That feature will be part of the next 4.0.0 release (the next beta or the official version, whichever comes first). The experience was enough to convince me that Gastown (and Beads itself) are definitely worth further investigation.

@@ -1,5 +1,5 @@
 ---
-layout: snippet-post
+layout: article-post
 title:  "Unique Vertex Label Anti-pattern"
 date:   2025-06-19
 categories: snippet

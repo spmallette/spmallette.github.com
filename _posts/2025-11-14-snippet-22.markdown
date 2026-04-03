@@ -1,5 +1,5 @@
 ---
-layout: snippet-post
+layout: article-post
 title:  "TinkerPop 3.8.0 Reflections"
 date:   2025-11-14
 categories: snippet

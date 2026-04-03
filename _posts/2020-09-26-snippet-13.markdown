@@ -1,5 +1,5 @@
 ---
-layout: snippet-post
+layout: article-post
 title:  "Thinking in VertexPrograms"
 date:   2020-09-26
 categories: snippet
