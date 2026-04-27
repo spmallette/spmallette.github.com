@@ -9,10 +9,13 @@ Stephen Mallette is a core contributor and long-time maintainer of
 shape the architecture and standards behind modern graph databases and the 
 Gremlin query language. His work has supported production graph systems 
 including Titan, DataStax Graph, and 
-[Amazon Neptune](https://aws.amazon.com/neptune/), and he is a co-author of 
-the second edition of [Practical Gremlin](https://krlawrence.github.io/graph/),
-reflecting his ongoing commitment to advancing graph computing in both industry
-and open source.
+[Amazon Neptune](https://aws.amazon.com/neptune/), he hosts the 
+[TinkerPop Wide](https://www.youtube.com/watch?v=5JydxBXJZn0&list=PLGDjrkYcxDce8wLhdGKh2iGa_mkbK_GFV) 
+[Twitch stream](https://www.twitch.tv/apachetinkerpop) series to help share 
+information on graph tools and systems found in the wider TinkerPop Community
+and he is a co-author of the second edition of 
+[Practical Gremlin](https://krlawrence.github.io/graph/), reflecting his ongoing 
+commitment to advancing graph computing in both industry and open source.
 
 ## Articles & Presentations
 

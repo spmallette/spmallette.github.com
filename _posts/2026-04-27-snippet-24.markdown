@@ -1,0 +1,67 @@
+---
+layout: article-post
+title:  "Long-term agentic memory in Apache TinkerPop using Beads"
+image: /assets/images/gremlin-gastown-beads.png
+date:   2026-04-27
+categories: snippet
+version: 4.0.0-beta.2
+description: >-
+  Using Beads, a memory upgrade for your coding agent, to capture a new graph-based artifact in agentic coding for Apache TinkerPop.
+---
+
+In my last post, [Gremlin goes to Gastown]({% post_url 2026-04-03-snippet-23 %}), I spent some time on how [Beads](https://github.com/gastownhall/beads) shapes and links tasks to help drive the execution side of agentic workflows. There is a lot of thinking from human and AI that lead up to that execution where we get a final, working piece of code as an output. I belive that thinking-part, that ledger of choice, is an interesting artifact in and of itself and for the most part, it is unfortunately lost in the process. This post explores how Beads helps maintain that artifact, thereby providing a long-term memory for agents.
+
+When working with an agent, development becomes a conversation. There’s a steady back-and-forth where decisions get made in different ways. Sometimes the human is explicit. Sometimes the agent fills in gaps. Sometimes both converge on something without ever really stating it outright. By the time code is written, a lot has already happened. What gets committed at the end of that process, however, looks pretty familiar with source code, tests, maybe some documentation all finding their way to a Git repository. We'd think of these things as the usual artifacts we've always produced and what mattered. The conversation and thinking that produced those artifacts, such as the reasoning, the trade-offs, and the abandoned directions mostly disappear.
+
+That’s not a new problem. It’s how software development has generally worked. Most of that decision-making has historically lived in someone’s head, with only fragments making their way into comments or design documentation. The difference now is that, with agents, that thinking actually exists in a concrete form. It’s written down, but just isn’t preserved in a way that’s particularly useful. You could try to keep the full transcript, but that quickly becomes unwieldy. A raw session log is dense, noisy, and difficult to navigate. It’s not something you can reasonably query or expect an agent or human to make effective use of later. Storing it verbatim doesn’t really solve the problem; it just changes where the problem lives.
+
+What seems more promising is to treat that stream of decisions as something that can be structured. This is where Beads starts to feel like more than just a task coordination mechanism or issue tracker.
+
+A bead already represents a unit of work, but it also carries relationships describing what it depends on, what it blocks, and where it fits in a larger effort. That structure is a graph, and that graph is already capturing part of the story. The missing piece is the reasoning that led to the bead itself.
+
+Consider the following bead from [Apache TinkerPop](https://tinkerpop.apache.org/) contributor, [Cole Greer](https://github.com/Cole-Greer):
+
+```
+$ bd show tinkerpop-big.11
+○ tinkerpop-big.11 · Multi-Label Vertex Implications for Schema   [● P2 · OPEN]
+Owner: Cole-Greer · Type: task
+Created: 2026-04-02 · Updated: 2026-04-02
+
+DESCRIPTION
+Investigate and address implications of multi-label vertices for the schema system.                 
+                                                                                                    
+Questions to Resolve                                                                                
+Some providers support vertices with multiple labels. If a vertex has labels "person" and "employee",
+what does type() return? Both VertexType vertices?                                                  
+Should VertexType model single labels or label-sets?                                                
+How do property definitions compose when a vertex matches multiple types?                           
+Does schema enforcement (bead 7) need to validate against all matching types or just one?           
+Should the schema system remain label-based (matching TinkerGraph's single-label model) with multi- 
+label as a provider extension, or should it be first-class?                                         
+                                                                                                    
+Notes                                                                                               
+TinkerGraph only supports single-label vertices, so the reference implementation won't exercise this
+This may only need a design decision and documentation rather than code changes, depending on the   
+outcome                                                                                             
+
+
+PARENT
+  ↑ ○ tinkerpop-big: (EPIC) Graph Schema Interfaces ● P1
+
+DEPENDS ON
+  → ○ tinkerpop-big.1: Core Schema Interfaces (gremlin-core) ● P1
+```
+
+This bead is a bit different. It doesn’t describe a concrete implementation step so much as it captures a set of unresolved questions. It’s essentially a snapshot of uncertainty. You can see the shape of the problem immediately. Multi-label vertices introduce ambiguity into a model that has historically assumed a single label. From there, the questions start to branch. What does `type()` mean in that world? Is a type still tied to a single label, or does it become something compositional? If multiple types apply, how do their properties interact? Even the scope of the work is unclear—this might turn into code, or it might resolve as documentation.
+
+What’s interesting is that this bead already contains more of the "thinking" than a typical task. It exposes the open edges of the design space, but it still stops short of capturing how those questions eventually get resolved. At some point, decisions will be made. The TinkerPop Community will come to consensus on one model over another, certain trade-offs will be accepted, and some paths outright rejected. When that happens, the bead will likely be updated, maybe closed, and the resulting changes will show up in code and docs. The path from these questions to those decisions is where most of the insight lives, and will be found in future connected beads when they are made. The character of the Beads graph moves from just being a dependency tracker to look more like a memory system.
+
+In that model, a bead is no longer just "something to do" or even "something that was done." It becomes an anchor point for a set of decisions. Those decisions can branch, reference each other, and carry context forward. Over time, the graph accumulates not just the history of changes, but the reasoning behind them, offering interesting implications for both humans and agents.
+
+For a human coming back to a piece of code months later, the usual question is “why is this like this?” The answer is rarely obvious from the code itself. With a graph of decisions attached, that question becomes something you can actually traverse.
+
+For an agent, the impact is probably even more significant. Instead of inferring intent from the current state of the code, it can follow the path of decisions that led there. Constraints, prior trade-offs, even rejected approaches become part of the available context. That starts to look a lot less like stateless prompting and a lot more like memory.
+
+The important shift here is in what we consider part of the deliverable. Right now, the session is treated as disposable. The code is the artifact that matters, and everything else is intermediate. But if the session contains the reasoning that produced the code, then throwing it away means discarding part of the work. With Beads already providing a graph at the center of the codebase extending that graph to include decisions feels like a natural progression rather than a separate system.
+
+Viewed that way, Beads starts to take on a different role. It isn’t just coordinating work across agents. It’s accumulating the memory of how that work came to be. I find it interesting and, yet unsurprising, that the intersection of beads, memory, decision-making and other points of this post all culminate in a graph. Perhaps, TinkerPop and [Gremlin](https://tinkerpop.apache.org/gremlin.html) will someday play a role in navigating a Beads graph to help guide its own development. 
