@@ -19,6 +19,9 @@ commitment to advancing graph computing in both industry and open source.
 
 ## Articles & Presentations
 
+- **29 APR 2026 - AWS Database Blog:** [Exploring type-safe .NET development for Amazon Neptune with Gremlinq](https://aws.amazon.com/blogs/database/exploring-type-safe-net-development-for-amazon-neptune-with-gremlinq/)  
+  Co-authored with Daniel Weber, the author of Gremlinq, this post describes advanced features of Gremlinq and how it can be best used with Amazon Neptune.
+
 - **07 JUN 2024 - AWS Database Blog:** [Exploring new Features of Apache TinkerPop 3.7.x in Amazon Neptune](https://aws.amazon.com/blogs/database/exploring-new-features-of-apache-tinkerpop-3-7-x-in-amazon-neptune/)  
   Introduces significant new Gremlin steps and capabilities for manipulating strings, collections, and dates, improving both developer experience and language expressiveness in Neptune.
 
