@@ -28,11 +28,11 @@ commitment to advancing graph computing in both industry and open source.
 - **08 MAR 2023 - AWS Database Blog:** [Exploring new features of Apache TinkerPop 3.6.x in Amazon Neptune](https://aws.amazon.com/blogs/database/exploring-new-features-of-apache-tinkerpop-3-6-x-in-amazon-neptune/)  
   Details the addition of features like `mergeV()`, `mergeE()`, and `TextP.regex()` predicates that simplify upserts and flexible string filtering in Gremlin for Neptune users.
 
-- **27 SEP 2021 - AWS Open Source Blog:** [Why developers like Apache TinkerPop, an open source framework for graph computing](https://aws.amazon.com/blogs/opensource/why-developers-like-apache-tinkerpop-an-open-source-framework-for-graph-computing/), co-author  
-  Explains how TinkerPop empowers developers to add graph computing and analytics to applications while remaining vendor-agnostic, largely through the Gremlin language and thriving ecosystem.
-
 - **01 AUG 2022 - AWS Open Source Blog:** [Beyond Code: The Artist Who Contributes to Apache TinkerPop](https://aws.amazon.com/blogs/opensource/beyond-code-the-artist-who-contributes-to-apache-tinkerpop/)  
   Highlights the important and often overlooked artistic contributions that help build the recognizable TinkerPop identity, focusing on artist Ketrina Thompson.
+
+- **27 SEP 2021 - AWS Open Source Blog:** [Why developers like Apache TinkerPop, an open source framework for graph computing](https://aws.amazon.com/blogs/opensource/why-developers-like-apache-tinkerpop-an-open-source-framework-for-graph-computing/), co-author  
+  Explains how TinkerPop empowers developers to add graph computing and analytics to applications while remaining vendor-agnostic, largely through the Gremlin language and thriving ecosystem.
 
 - **22 JUL 2021 - Global Data Geeks:** [The Graph Show](https://www.youtube.com/watch?v=tPBOA08ZMLY)  
   Video discussion comparing property graphs and RDF with industry experts and exploring the future role of graph data models in large organizations and the wider database ecosystem.
