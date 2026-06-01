@@ -1,0 +1,66 @@
+---
+layout: article-post
+title:  "Graphs, Agents, and the Characters Between"
+image: /assets/images/gremlin-gastown-jungle.png
+date:   2026-06-01
+categories: snippet
+version: 4.0.0-beta.2
+description: >-
+  Using character‑driven metaphors has long helped shape the way people think about Apache TinkerPop and graphs, but this same approach equally helps with other complex systems, like multi‑agent workflows.
+---
+
+If you're around folks who have used [Gremlin](https://tinkerpop.apache.org/gremlin.html) as their graph query language long enough, I think there is a tendency toward personifying him a bit. Gremlin is as much the query as he is the actor who walks around a graph collecting your data. In explaining Gremlin to folks, it's not uncommon for me to find myself asking people to envision Gremlin walking from one vertex to another. I find the imagery of Gremlin and all his friends incredibly helpful in describing the occasional complexities of graphs and [Apache TinkerPop](https://tinkerpop.apache.org/).
+
+I think it is for this reason I've enjoyed working with [Gastown](https://gastownhall.ai/). While TinkerPop has Gremlin and robot friends to describe their graph world, Gastown has a Mayor, Polecats, Refineries and other characters to help describe multi-agent orchestration. And, for my own cases where Gastown doesn't quite fit, I have my own personal agent orchestration system formulated around imagery of a jungle full of Monkeys, Coconuts, a Toucan and a patient Capybara.
+
+None of this is just branding.
+
+The more moving pieces a system has, the more we lean on metaphor to keep it all straight in our heads. At some point the  diagrams and generic names for components and systems fail to convey a form that is easy or fun to think about, and you end up talking about "friends" instead: the one who walks the graph, the one who schedules the work, the one who watches for trouble. The names we give those friends end up being the real user interface.
+
+The TinkerPop cast as cognitive API
+===================================
+
+In TinkerPop, we talk about Gremlin as if it were a character, not just a query language. Gremlin wanders the graph, carries state, makes decisions, and brings back results. Gremlin's canine robot friend, Rexster, listens for requests for information on the graph and obediantly fetches you results as a good robot dog would. Furnace burns hot with fire as he processes complex graph alogrithms and performs other analytics. The graph itself becomes a kind of world, The TinkerPop, that they inhabit. The traversal machine turns into the physics of that world, quietly enforcing the rules under which they live their little lives.
+
+Individually, none of these characters is technically necessary. You can explain everything with common terms like "vertices, edges, traversers, execution engines, drivers and servers." But in practice, people latch onto the characters and visualize their connection to the system. It helps orient you and reduces iterface friction with the underlying tool. You end up with a mental model you can actually carry around.
+
+Gastown’s civic metaphor for multi‑agent systems
+================================================
+
+The same thing is happening in the new wave of multi‑agent systems, and Gastown is a particularly explicit example. Gastown is "a workspace for coordinating multiple AI coding agents over git‑backed projects." That is accurate description but also matches the description of other such projects.
+
+The metaphor is where it comes alive and makes it memorable. Instead of "orchestrator," you get a **Mayor**. The Mayor doesn’t typically write code; they talk to you, breaks your request into work units, and assigns them. It is the character who knows what’s going on, keeps the big picture in mind, and tells other folks what to do. Instead of "ephemeral worker processes," you get **Polecats**. Polecats are the hands‑on coders who take on tasks, touch the files, run tools, and propose changes. The Mayor calls them up when it needs something done. Instead of "git‑backed state" and "issue abstraction," you get **Refineries** and **Beads**. Work is encapsulated in Beads, which are small units associated with code changes, issues, or tasks—that flow through a Refinery which is a merge queue processor. Together with other actors and entities, Gastown logically makes intuitive sense.
+
+Once you have that cast, you don’t have to remember how all the internal components talk to each other. You just say, "I’ll ask the Mayor to spin up a few Polecats." The details are still there, but you only pull them out when you need them.
+
+A jungle of tasks, Coconuts, and Monkeys
+========================================
+
+Gastown’s metaphors are tuned for a multi‑agent coding town, but it's opinionated approach doesn't always fit what I'm working on. I found that I needed my own metaphor for a multi-agent system. My own mental model for agent orchestration looks less like a small industrial city and more like a dense, noisy, surprisingly well‑organized jungle.
+
+I spend most of my time in a **Hammock** strung between two trees. The Hammock is the thinking spot. It’s where I can see the broad outlines of the jungle which encompasess the cross-sectionality of things I might be working on. From there, I think through ideas, decide what should happen next, and keep an eye on the overall ecosystem.
+
+Ideas and tasks arrive in the Hammock first. Some are half‑formed, some are clearly work. When one is ready to leave my head and become something an agent can work on, it goes into a **Coconut**.
+
+Coconuts are the basic unit of work in the jungle. They are durable. They can sit by the Hammock while I’m still getting my thoughts straight. They can be set aside and later cracked open to be filled with more detail or context. A Coconut might represent a bug, an experiment, a whole feature, or a piece of documentation I want to have.
+
+Once a Coconut is ready I roll it out into the jungle and the **Monkeys** take notice. The jungle is full of Monkeys I’ve trained in specific skills. Some know how to write documentation, while others are experts at writing code, creating tests or are any number of other tasks. When a Monkey spots a Coconut that matches its training, it swings down, picks it up, and starts working on it. That Monkey is also smart enough to know when it needs a team filled with other expertise and will recruit other Monkeys with the right skills to help it out. By this point, however, I've moved on in my Hammock to the next Coconut.
+
+When the Monkey is done he bring the results back to the Hammock. Other times, the Monkey realizes it’s in over its head and calls for help. I can either interact with it by shouting from my Hammock or meet up with it one-on-one for more direct, focused work. 
+
+From my perspective in the Hammock, I can always look out and see what the Monkeys are doing. I can see which Coconuts are being held, which ones are still lying in the leaves, and which ones are making their way back. If a Monkey has been sitting with the same Coconut for too long, I can swing down myself, take a look, and either give it a nudge or pull the Coconut back to the Hammock for rethinking.
+
+In the background, a **Capybara** patrols the edges of the jungle and watches the health of the ecosystem. It lets me know if something systemic is wrong, like abandoned Coconuts and lost messages from the Monkeys. I can also lean on a **Toucan** for investigating when something is wrong in the jungle and count on him to fix it so that it doesn't happen again. 
+
+This lightweight jungle metaphor for managing agents, inspired by Gastown, has helped me be incredibly productive. I find it so natural to say, "Let's get a monkey to work on JIRA-55674" or "How far along is Bobo right now in fixing the bug?" or "What's been happening in the jungle since I left yesterday?" It's also made the devilry of agents sometimes comical. I once had a Monkey named Jinx get extremely confused. She went on a destructive tear, deleting a great many workspaces of other Monkeys who were actively trying to work. Jinx. How perfect a name.
+
+The power and risk of friendly metaphors
+========================================
+
+A good metaphor compresses down all the edge cases and error states into something you can naturally recall and interact with as a model seamlessly. You don’t have to remember exactly how a traverser carries its state if you can remember what a Gremlin does. You don’t need to rehearse Gastown’s internal APIs if you can talk about what the Mayor and Polecats are up to. You can keep your own agent setup in your head if all you have to remember is "Coconuts roll into the jungle, trained Monkeys grab them, and the Capybara complains when they don’t come back."
+
+Metaphors also make it easier to teach and to debug. When a newcomer asks where something should live in a graph application, it is easier to say, "That’s a job for this character" than to throw a set of technical terms at them. When something goes wrong, it helps to be able to say, "The Mayor is assigning too much work to this one Polecat," or "We’ve trained the wrong Monkeys for this kind of Coconut," and have everyone instantly know what that means.
+
+On the other hand, cute metaphors can make serious systems feel lighter than they are. For example, a Monkey dropping a Coconut means loss of real work. Metaphors can also lock in a certain worldview. If you only ever think in terms of individual characters, you might miss the fact that the system is really a swarm. If your metaphor is too rigid, it will resist architectural changes you need to make later.
+
+But on balance, I think it is worth being deliberate about the stories we tell around our systems. If you are going to be living with a complex graph stack, a multi‑agent workspace, or your own cluster of personal tools, you might as well give yourself a cast of characters you actually enjoy spending time with. The code will do what it does either way. The metaphor is for you.
