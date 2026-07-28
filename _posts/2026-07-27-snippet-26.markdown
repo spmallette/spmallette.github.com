@@ -1,0 +1,211 @@
+---
+layout: article-post
+title:  "Gremlin Knows GQL"
+image: /assets/images/gremlin-knows-gql.png
+date:   2026-07-27
+categories: snippet
+version: 4.0.0-beta.3
+description: >-
+  Gremlin’s revised `match()` step better supports the notion of Gremlin being both an imperative and declarative query language and with GQL support out-of-the box demonstrates the relationship between Gremlin and the ISO GQL standard.
+---
+
+[Gremlin](https://tinkerpop.apache.org/gremlin.html) has long claimed that it can be both imperative and declarative. It delivered this functionality by way of `match()` step which [accepted anonymous traversals](https://tinkerpop.apache.org/docs/current/reference/#match-stephttps://tinkerpop.apache.org/docs/current/reference/#match-step) representing graph traversal patterns. While this approach technically worked, most users didn't find the syntax as easy and intuitive as they would have liked and providers struggled to optimize its functionality. With its limited use cases given those constraints, the step never got much use. For Apache TinkerPop 4, [starting with the 4.0.0-beta.3](https://tinkerpop.apache.org/download.html), the `match()` step has been replaced with a more general form that will take a declarative query string. This flexibilty allows providers to offer support for whatever declarative query language they wish to support and offers uses a wider selection of options for writing their queries in the way they wish. 
+
+In support of `match()` and it's new design, TinkerPop offers TinkerGQL which is a subset of the [GQL ISO standard](https://www.iso.org/standard/76120.html). It particularly focuses on offering support of the motif-style pattern syntax that describes graph relationships that many find easy to understand. The reference implementation of the processing engine does not translate to Gremlin steps for execution. Instead, it is natively processed in a TinkerGQL engine that has the capability for use by any provider. In this way, virtually any graph can support TinkerGQL as an option. In then end, it is important that you understand the capabilities of the graph database you're using.
+
+## match() and GQL together
+
+Before we look at the new syntax, let's start with the old. Here's a basic use of how `match()` formerly worked: 
+
+{% highlight text %}
+gremlin> g.V().match(__.as("a").hasLabel("person").out("created").hasLabel("software").as("s"),
+......1>             __.as("s").hasLabel("software").in("created").hasLabel("person").as("b")).
+......2>   where("a", neq("b")).
+......3>   select("a", "b", "s").by("name")
+==>[a:marko,b:josh,s:lop]
+==>[a:marko,b:peter,s:lop]
+==>[a:josh,b:marko,s:lop]
+==>[a:josh,b:peter,s:lop]
+==>[a:peter,b:marko,s:lop]
+==>[a:peter,b:josh,s:lop]
+{% endhighlight %}
+
+With the 4.0.0-beta.3 we can instead use TinkerGQL and do:
+
+{% highlight text %}
+gremlin> g.match("MATCH (a:person)-[:created]->(s:software), (b:person)-[:created]->(s)").
+......1>   where("a", neq("b")).
+......2>   select("a", "b", "s").by("name")
+==>[a:marko,b:josh,s:lop]
+==>[a:marko,b:peter,s:lop]
+==>[a:josh,b:marko,s:lop]
+==>[a:josh,b:peter,s:lop]
+==>[a:peter,b:marko,s:lop]
+==>[a:peter,b:josh,s:lop]
+{% endhighlight %}
+
+The two traversals compute the same result, but they read very differently, with the latter demonstrating some increased readability with GQL allowing for a more direct description of the pattern rather than a Gremlin traversal specifying the pattern.
+
+As you consider the mixed syntax of GQL and Gremlin, note that TinkerGQL does not support `WHERE` or `RETURN` clauses directly. The focus is on GQLs pattern matching syntax leaving standard Gremlin steps to do additional filtering and transformation. Taking a step back from that more complex example, let's look at a simpler form to showcase the interface.
+
+{% highlight text %}
+gremlin> g.match("MATCH (p:person)-[:created]->(s:software)")
+==>[s:v[3],p:v[1]]
+==>[s:v[3],p:v[4]]
+==>[s:v[3],p:v[6]]
+==>[s:v[5],p:v[4]]
+{% endhighlight %}
+
+Basic usage demonstrates that `match()` returns a `Map` containing all bound variables. From there, you may use normal Gremlin steps to work with that `Map`. The following examples show use of `select()` as a common pattern for transforming results:
+
+{% highlight text %}
+gremlin> g.match("MATCH (p:person)-[:created]->(s:software)").
+......1>   select("p","s").by(elementMap())
+==>[p:[id:1,label:person,name:marko,age:29],s:[id:3,label:software,name:lop,lang:java]]
+==>[p:[id:4,label:person,name:josh,age:32],s:[id:3,label:software,name:lop,lang:java]]
+==>[p:[id:6,label:person,name:peter,age:35],s:[id:3,label:software,name:lop,lang:java]]
+==>[p:[id:4,label:person,name:josh,age:32],s:[id:5,label:software,name:ripple,lang:java]]
+{% endhighlight %}
+
+You could also do aggregations with `group()` step:
+
+{% highlight text %}
+gremlin> g.match("MATCH (p:person)-[:created]->(s:software)").
+......1>   group().
+......2>     by(select("p").bothE().count()).
+......3>     by(select("s").values("name"))
+==>[1:lop,3:ripple]
+{% endhighlight %}
+
+The other important pattern to follow transformation would be using `where()` for additional filtering. Recall that `where()` was designed to work with the original `match()` step that took `Traversal` arguments and therefore is preferred over `filter()` syntatically for that purpose. We saw `where()` usage in the first example, but here's another, written with slightly differently GQL, describing the same query and demonstrating the core pattern for `where()` with binding comparison:
+
+{% highlight text %}
+gremlin> g.match("MATCH (a:person)-[:created]->(s:software)<-[:created]-(b:person)").
+......1>     where("a", neq("b")).
+......2>   select("a", "b", "s").by("name")
+==>[a:marko,b:josh,s:lop]
+==>[a:marko,b:peter,s:lop]
+==>[a:josh,b:marko,s:lop]
+==>[a:josh,b:peter,s:lop]
+==>[a:peter,b:marko,s:lop]
+==>[a:peter,b:josh,s:lop]
+{% endhighlight %}
+
+## match() and GQL with Air Routes
+
+The Air Routes graph is a nice way to show off the syntax and mental model of `match()`. Here are some more examples so that you can start to understand the features that TinkerGQL offer within the context of `match()`.
+
+**Find 3 routes to any airport starting IAD**
+
+{% highlight text %}
+gremlin> g.match("MATCH (a:airport {code: 'IAD'})-[:route]->(b:airport)").
+......1>   limit(3).
+......2>   select("a","b").by('code')
+==>[a:IAD,b:PBG]
+==>[a:IAD,b:YTZ]
+==>[a:IAD,b:AOO]
+{% endhighlight %}
+
+**Find routes to any airport starting IAD where the length is exactly 250 miles long**
+
+{% highlight text %}
+gremlin> g.match("MATCH (a:airport {code: 'IAD'})-[r:route {dist: 250}]->(b:airport)").
+......1>   select("a","b","r").
+......2>     by("code").by("code").by("dist")
+==>[a:IAD,b:ITH,r:250]
+{% endhighlight %}
+
+**Find 3 routes to BOS starting in IAD that require a stop**
+
+{% highlight text %}
+gremlin> g.match("MATCH (a:airport {code: 'IAD'})-[:route]-(b:airport)," +
+......1>         "      (b)-[:route]->(c:airport {code: 'BOS'})").
+......2>   limit(3).
+......3>   select("a","b","c").
+......4>     by("code")
+==>[a:IAD,b:PBG,c:BOS]
+==>[a:IAD,b:YTZ,c:BOS]
+==>[a:IAD,b:YYZ,c:BOS]
+{% endhighlight %}
+
+**Find 3 routes from IAD that have a second leg that is longer than the first**
+
+{% highlight text %}
+gremlin> g.match("MATCH (a:airport {code: 'IAD'})-[r1:route]-(b:airport)," +
+......1>         "      (b)-[r2:route]->(c:airport)").
+......2>   where("r1", lt("r2")).by("dist").
+......3>   limit(3).
+......4>   select("a", "b", "c").by("code")
+==>[a:IAD,b:PBG,c:FLL]
+==>[a:IAD,b:PBG,c:MCO]
+==>[a:IAD,b:PBG,c:MYR]
+{% endhighlight %}
+
+**Find 3 triangle-shaped routes that start and end at IAD**
+
+{% highlight text %}
+gremlin> g.match("MATCH (start:airport {code: 'IAD'})-[:route]-(b:airport)-[:route]->(c:airport)-[:route]->(start)"). 
+......1>   select("start", "b", "c").by("code").
+......2>   limit(3)
+==>[start:IAD,b:PBG,c:BOS]
+==>[start:IAD,b:PBG,c:MCO]
+==>[start:IAD,b:PBG,c:FLL]
+{% endhighlight %}
+
+## On Performance
+
+The performance of `match()` directly ties to the capabilities and optimizations of the declarative query language processing engine of the graph database you are using. Speaking specifically for TinkerGQL, used with TinkerGraph and the reference implementation processing engine, early benchmarks demonstrate that there are cases where using `match()` is advantageous and that the benefit extends beyond basic query readabilty and convenience.
+
+The best example is for patterns that fullfill similar statistics for "finding airports with routes to ATL". 
+
+{% highlight text %}
+gremlin> g.V().hasLabel("airport").as("a").
+......1>   out("route").has("code", "ATL").as("b").
+......2>   select("a", "b")
+==>[a:v[3],b:v[1]]
+==>[a:v[4],b:v[1]]
+==>[a:v[5],b:v[1]]
+==>[a:v[6],b:v[1]]
+==>[a:v[7],b:v[1]]
+==>[a:v[8],b:v[1]]
+...
+{% endhighlight %}
+
+If written just as the described by the English description in imperative fashion, we scan all ~3500 airports and then fan out along every route before filtering, paying the full `O(|airports| × degree)` cost. Experienced Gremlin users would probably know to invert this query rather than follow the English description:
+
+{% highlight text %}
+gremlin> g.V().has("airport", "code", "ATL").as("b").
+......1>   in("route").as("a").
+......2>   select("a", "b")
+==>[a:v[307],b:v[1]]
+==>[a:v[437],b:v[1]]
+==>[a:v[402],b:v[1]]
+==>[a:v[180],b:v[1]]
+==>[a:v[363],b:v[1]]
+==>[a:v[403],b:v[1]]
+...
+{% endhighlight %}
+  
+This change improves the performance of the query as it will take advantage of an index to find "ATL" prior to traversing edges. In the following example, switching to the TinkerGQL form we get to retain the natural representation of the query thereby aligning with the English description. We also don't need awareness of underlying index concerns or other data statistics.
+
+{% highlight text %}
+gremlin> g.match("MATCH (a:airport)-[:route]->(b:airport {code: 'ATL'})")
+==>[a:v[3],b:v[1]]
+==>[a:v[4],b:v[1]]
+==>[a:v[5],b:v[1]]
+==>[a:v[6],b:v[1]]
+==>[a:v[7],b:v[1]]
+==>[a:v[8],b:v[1]]
+...
+{% endhighlight %}
+
+This TinkerGQL form outperforms the first imperative query in its natural form by 84x and the manually optimized form by about 12%. 
+
+## Gremlin and Declarative Query Languages
+
+The new capability of `match()` step to host declarative query languages, mix them with imperative steps and process them across any TinkerPop-enabled graph system greatly expands the flexibility of the language. It shows how Gremlin can coexist with the future of GQL and augment its capabilty, offering users greater choice in how they express their queries.
+
+While TinkerGQL is still a bit early in its development, there is a great deal of opportunity to expand on the foundations that have been laid. Top of mind are features like variable length path support and the ability to bind Gremlin step labels as seeds to mid-traversal `match()` steps. For the latter, imagine a traversal like: `g.V(1).as("a").match("(a)-[:knows]->(b:person)")`. While there is much room for growth with TinkerGQL, we also know that there are TinkerPop providers out there who already have their own native support for other query languages. Consider [Amazon Neptune with support for openCypher](https://docs.aws.amazon.com/neptune/latest/userguide/access-graph-opencypher.html), as it could someday offer access to a mixed execution engine that would give you openCypher and Gremlin together.
+
+This new offering with `match()` opens a great many doors for exploration and growth in TinkerPop 4.0 for both its developers, its providers and its users. It will be both exciting and interestings to see how this feature expands and how it is used.
+
