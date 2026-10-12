@@ -1,0 +1,72 @@
+---
+layout: article-post
+title:  "Remembering Why in Apache TinkerPop"
+image: /assets/images/gremlin-gastown-beads.png
+date:   2026-10-12
+categories: snippet
+version: 4.0.0-beta.3
+description: >-
+  How Apache TinkerPop uses Beads to record its design decisions, and the alternatives it rejected, as lasting project memory.
+---
+
+Anyone who has developed software for any extended period of time knows the experience of looking at a piece of code at some point in the future and wondering why it is the way it is. The commit tells you what changed. The JIRA issue, if there is one, tells you what someone set out to do. A well disciplined project will likely have some good inline and structured code comments that provide some clues as to what the thinking was at the time. What almost never survives is the reasoning in between, like the approach that was tried first and abandoned, the option that looked obvious but had a hidden cost, or the trade-off that was accepted knowingly. Without that, a future maintainer either re-litigates a settled question or, worse, "fixes" something that was deliberate.
+
+Working with agents makes this problem both worse and more solvable. Worse, because a great deal of design reasoning now happens in conversation with an agent, and that conversation disappears when the session ends. More solvable, because the agent is right there when the decision is made and can write it down at the moment it happens. In [Apache TinkerPop](https://tinkerpop.apache.org/), we've been using [Beads](https://github.com/gastownhall/beads) to do exactly that.
+
+## From idea to practice
+
+Back in April, in [Long-term agentic memory in Apache TinkerPop using Beads]({% post_url 2026-04-27-snippet-24 %}), I argued that the reasoning behind agent-driven work is an artifact in its own right, and that Beads, which I'd first come across while experimenting with [Gastown]({% post_url 2026-04-03-snippet-23 %}), could grow from a dependency aware agent issue tracker into a **long-term memory** by connecting decisions to the work they shaped. At the time, that was more of an idea than a practice. The example I used was a bead full of open questions about multi-label vertices, and the best I could say was that the path from those questions to their answers would be found in future connected beads, whenever they were made.
+
+In the months since, I've worked out what those connected beads should actually look like and when an agent should write them. This post describes where TinkerPop and Beads landed.
+
+Official project contributors have a straightforward means for setup, using `bin/agent-setup.sh --contributor` to wire up the workflow to their agent. The repository's `AGENTS.md` tells any agent that, if the `bd` command is installed, it should run `bd prime` at the start of a session. That emits [`.beads/PRIME.md`](https://github.com/apache/tinkerpop/blob/master/.beads/PRIME.md), which is the canonical description of how TinkerPop uses Beads.
+
+A key guiding instruction in `PRIME.md` summarizes the logic that drives the agent:
+
+> Treat every bead as something a contributor will read in three years.
+
+## The structure
+
+Every piece of work hangs off a **root bead**, which is usually a feature, epic or task. Beneath it sit three kinds of children:
+
+![The structure of a TinkerPop bead subtree](/assets/images/beads-structure.svg)
+
+**Records** hold the external artifacts, such as the JIRA issue, the pull request, a dev list thread, a proposal and, once the work lands, the commits it merged as. 
+
+**Tasks** are the work itself, and an agent plans them natively as beads in a graph rather than just Markdown text. As a graph, edges create workflows that allow tasks to run in parallel, block on given dependencies, wait for human interaction or simply follow a chain of work. This is typically how Beads is used. 
+
+**Decisions** tend to come in pairs and represent the choices made while developing the work itself. A decision's reasoning is never edited in place. If the thinking changes, a new decision is created with a `supersedes` edge to the old one, so the record shows not only where the design ended up but how it got there.
+
+## Capturing the road not taken
+
+A decision bead records a choice and its reasoning. TinkerPop's approach goes a step further in that that every chosen decision is typically paired with a **rejected** sibling, connected by a `related` edge. The chosen decision says why it won and what it rules out. The rejected one says what the alternative concretely was, why it lost and what settled it.
+
+Knowing when to write one is the tricky part, so `PRIME.md` doesn't leave it to judgment. It names five observable events that signal a decision has happened:
+
+1. The operator redirects the agent, as in "no, do X instead" or "we tried that."
+2. What was built diverged from the JIRA, the proposal or the dev list thread.
+3. An approach was tried and abandoned.
+4. The agent presented options.
+5. A discovery contradicted an assumption.
+
+If something was considered and not chosen, it gets a decision and a rejected sibling. If something is just true, like a measurement or a constraint, it goes in a comment on the root instead. The rejected thing doesn't have to be a grand design either. Declining to implement a certain body of tests or opting to write documentation of greater scope than the work initially intended are both relevant sorts of rejections.
+
+There are a couple of rules around this that I've found make a real difference in the quality of what gets recorded. The first is that a rejected alternative's reason must be a mechanism rather than a judgment. A mechanism is like the cause and effect that made the option fail. It is stated in terms of the code or the situation rather than an opinion about it. A reason such as "Too slow" is a judgment and it helps a future reader little in the future. On the other hand, "Every lookup has to scan the whole log, so reads get slower as the graph grows" is a mechanism. The first leaves nothing to check, while the second names a specific condition. If someone later adds an index that removes the scan, they can see right away that the old objection no longer applies. 
+
+The second rule is that if the agent can't say why I rejected something, it has to ask before writing the bead. An incorrectly inferred reason looks exactly like a factual one three years later. Asking while the conversation is still live is the only way to get it right.
+
+## What it looks like in practice
+
+The work on TinkerGraph's new durable storage, in [#3639](https://github.com/apache/tinkerpop/pull/3639), produced 52 beads, 33 of which were decisions and 17 of those rejected alternatives. A simple example of rejected alternative came up while planning a leaner on-disk format. The agent recommended bumping the storage format version, so that a store written in the older format would present an error rather than misread. I overrode it, and the rejected bead records why. Nothing had been released yet, so there was no existing store to protect, and the machinery for two formats to coexist would have been unnecessary work. The bead ends by noting that the question should be reconsidered once the format ships, since the version byte is still there to bump when it matters.
+
+That one bead does a few things at once. It captures me redirecting the agent, which is the strongest signal that a decision happened. Its reason is a mechanism, since "nothing is released" is a fact anyone can check. In addition, it names a condition that will actually arrive. The first time someone changes the format after 4.0.0 ships, the bead tells them the version bump was deliberately deferred and not simply forgotten.
+
+A smaller example concerned a configuration key. The storage directory was originally configured with `gremlin.tinkergraph.graphLocation`, inherited from 3.x, and the decision to rename it to `gremlin.tinkergraph.storage.directory` was paired with a rejected sibling for keeping the old name. The rejected bead explains that the continuity would have been nominal rather than behavioral. In 3.x the key named a file that drove automatic loading and saving, which 4.x removed, so keeping the familiar name would have preserved recognition while the behavior it named was gone. Should someone in the future wonder what happened to `gremlin.tinkergraph.graphLocation`, they will get a full accounting of the situation without having to comb through commits trying to piece the story together.
+
+## Memory for people and for agents
+
+Every long-lived project has its lore. It is the knowledge of why things are the way they are, like the approach that was tried years ago and abandoned, or the odd-looking compromise that keeps something else from breaking. Lore rarely makes it into documentation. It lives in the heads of the people who were there, and the only way to get at it is to ask them, assuming they are still around and still remember. TinkerPop has been going for over fifteen years, and over that time contributors have come and gone, each taking a bit of that lore with them.
+
+What Beads gives TinkerPop is a way to write that lore down at the moment it is created, while the reasoning is still fresh, and attach it to the work it shaped. Why something was done, and why the alternatives weren't, no longer depends on someone remembering it.
+
+This knowledge serves two audiences. A contributor revisiting a design can read the decisions and the paths not taken and understand the shape of the code without having been in the room. An agent working on that code later can do the same, which is arguably even more important, since an agent has no memory of past sessions at all unless something like this gives it one. In a sense, every contributor, human or agent, now has someone to ask who was there.
