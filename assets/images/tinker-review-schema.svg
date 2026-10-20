@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640" width="900" height="640" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" role="img" aria-labelledby="title desc">
+  <title id="title">tinker-review knowledge graph schema</title>
+  <desc id="desc">Vertex labels of the Pull Request Knowledge Graph (Comment, Discussion, Bead, File, Type, Function, Doc, Step, GrammarRule, Test) and the edges between them.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#555"/>
+    </marker>
+    <style>
+      .edge { stroke: #555; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+      .elabel { font-size: 12px; fill: #333; text-anchor: middle; paint-order: stroke; stroke: #fff; stroke-width: 5px; stroke-linejoin: round; }
+      .vlabel { font-size: 15px; font-weight: 600; text-anchor: middle; dominant-baseline: central; }
+      .legend { font-size: 13px; fill: #333; dominant-baseline: central; }
+      .code rect { fill: #dbeafe; stroke: #1d4ed8; } .code text { fill: #1e3a8a; }
+      .verify rect { fill: #dcfce7; stroke: #15803d; } .verify text { fill: #14532d; }
+      .domain rect { fill: #ede9fe; stroke: #6d28d9; } .domain text { fill: #4c1d95; }
+      .disc rect { fill: #ffedd5; stroke: #c2410c; } .disc text { fill: #7c2d12; }
+      .memory rect { fill: #fce7f3; stroke: #be185d; } .memory text { fill: #831843; }
+      rect { stroke-width: 1.5; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="640" fill="#fff"/>
+
+  <!-- edges -->
+  <line class="edge" x1="290" y1="90" x2="182" y2="90"/>
+  <text class="elabel" x="236" y="80">has_comment</text>
+
+  <line class="edge" x1="570" y1="90" x2="432" y2="90"/>
+  <text class="elabel" x="501" y="80">records</text>
+
+  <path class="edge" d="M340,67 C328,22 392,22 382,65"/>
+  <text class="elabel" x="361" y="22">addresses, proposed_in</text>
+
+  <path class="edge" d="M620,67 C608,22 672,22 662,65"/>
+  <text class="elabel" x="641" y="22">child_of, relates_to, blocks, caused_by, supersedes</text>
+
+  <line class="edge" x1="330" y1="113" x2="228" y2="235"/>
+  <text class="elabel" x="279" y="174">modifies</text>
+
+  <line class="edge" x1="390" y1="113" x2="478" y2="335"/>
+  <text class="elabel" x="434" y="224">modifies</text>
+
+  <line class="edge" x1="620" y1="113" x2="522" y2="335"/>
+  <text class="elabel" x="571" y="224">governs</text>
+
+  <line class="edge" x1="200" y1="283" x2="200" y2="415"/>
+  <text class="elabel" x="200" y="352">defines</text>
+
+  <line class="edge" x1="270" y1="275" x2="428" y2="346"/>
+  <text class="elabel" x="349" y="311">defines</text>
+
+  <line class="edge" x1="270" y1="432" x2="428" y2="374"/>
+  <text class="elabel" x="349" y="403">declares</text>
+
+  <path class="edge" d="M130,430 C82,412 82,472 128,452"/>
+  <text class="elabel" x="100" y="478">extends, implements</text>
+
+  <path class="edge" d="M485,383 C473,428 527,428 516,385"/>
+  <text class="elabel" x="500" y="440">calls, overrides</text>
+
+  <line class="edge" x1="570" y1="360" x2="728" y2="360"/>
+  <text class="elabel" x="649" y="350">implements_step</text>
+
+  <line class="edge" x1="800" y1="383" x2="800" y2="465"/>
+  <text class="elabel" x="800" y="428">has_rule</text>
+
+  <line class="edge" x1="730" y1="245" x2="572" y2="344"/>
+  <text class="elabel" x="651" y="291">documents</text>
+
+  <line class="edge" x1="800" y1="253" x2="800" y2="335"/>
+  <text class="elabel" x="800" y="298">documents</text>
+
+  <line class="edge" x1="360" y1="517" x2="473" y2="385"/>
+  <text class="elabel" x="416" y="452">tests</text>
+
+  <line class="edge" x1="400" y1="530" x2="733" y2="376"/>
+  <text class="elabel" x="567" y="453">covers</text>
+
+  <!-- vertices -->
+  <g class="disc"><rect x="40" y="67" width="140" height="46" rx="8"/><text class="vlabel" x="110" y="90">Comment</text></g>
+  <g class="disc"><rect x="290" y="67" width="140" height="46" rx="8"/><text class="vlabel" x="360" y="90">Discussion</text></g>
+  <g class="memory"><rect x="570" y="67" width="140" height="46" rx="8"/><text class="vlabel" x="640" y="90">Bead</text></g>
+  <g class="code"><rect x="130" y="237" width="140" height="46" rx="8"/><text class="vlabel" x="200" y="260">File</text></g>
+  <g class="code"><rect x="130" y="417" width="140" height="46" rx="8"/><text class="vlabel" x="200" y="440">Type</text></g>
+  <g class="code"><rect x="430" y="337" width="140" height="46" rx="8"/><text class="vlabel" x="500" y="360">Function</text></g>
+  <g class="verify"><rect x="730" y="207" width="140" height="46" rx="8"/><text class="vlabel" x="800" y="230">Doc</text></g>
+  <g class="domain"><rect x="730" y="337" width="140" height="46" rx="8"/><text class="vlabel" x="800" y="360">Step</text></g>
+  <g class="domain"><rect x="730" y="467" width="140" height="46" rx="8"/><text class="vlabel" x="800" y="490">GrammarRule</text></g>
+  <g class="verify"><rect x="260" y="517" width="140" height="46" rx="8"/><text class="vlabel" x="330" y="540">Test</text></g>
+
+  <!-- legend -->
+  <g transform="translate(60,605)">
+    <g class="code"><rect x="0" y="-8" width="16" height="16" rx="3"/></g><text class="legend" x="24" y="0">Code structure</text>
+    <g class="verify"><rect x="160" y="-8" width="16" height="16" rx="3"/></g><text class="legend" x="184" y="0">Verification</text>
+    <g class="domain"><rect x="300" y="-8" width="16" height="16" rx="3"/></g><text class="legend" x="324" y="0">TinkerPop domain</text>
+    <g class="disc"><rect x="470" y="-8" width="16" height="16" rx="3"/></g><text class="legend" x="494" y="0">Discussion</text>
+    <g class="memory"><rect x="600" y="-8" width="16" height="16" rx="3"/></g><text class="legend" x="624" y="0">Project memory (Beads)</text>
+  </g>
+</svg>

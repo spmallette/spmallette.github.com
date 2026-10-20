@@ -1,0 +1,95 @@
+---
+layout: article-post
+title:  "A Knowledge Graph for Every Pull Request"
+image: /assets/images/gremlin-gastown-beads.png
+date:   2026-10-19
+categories: snippet
+version: 4.0.0-beta.3
+description: >-
+  Using TinkerGraph to build a knowledge graph of a pull request, so that an agent can guide a reviewer through unfamiliar code and call out the issues it finds along the way.
+---
+
+Reviewing a large pull request has always been a bit of an exercise in orientation. Before you can judge whether a change is correct, you have to figure out where you are, what the change touches, what touches it and which parts of the diff actually matter. In [Apache TinkerPop](https://tinkerpop.apache.org/), that problem is made harder by the breadth of the codebase. Someone who knows `gremlin-core` well may have never spent time in `tinkergraph-gremlin` or `gremlin-server`, and a pull request that crosses those lines can leave even an experienced reviewer feeling like a new contributor. Combine that challenge with the increased size and scope of pull requests given agentic assistance and review becomes all the more difficult.
+
+In a prior post on [Micro Pull Requests]({% post_url 2026-08-05-snippet-27 %}), I wrote about agents producing changes so small they are typically trivial to review. This post is about the other end of that spectrum. Some time ago, I developed a skill in the TinkerPop repository called [tinker-review](https://github.com/apache/tinkerpop/tree/master/.skills/tinker-review) that helps with big, complex pull requests, and at its heart is something I find rather fitting for this project. It builds a graph.
+
+## A graph of the pull request
+
+The idea behind tinker-review is that a pull request is more than just a diff. It is a set of relationships. A changed method has callers. Those callers have callers. A changed interface has implementers, tests exercise some of the changed functions (and miss others), and the whole thing hangs off a JIRA issue, a dev list thread and a trail of review comments. A reviewer naturally tries to build that picture in their head, and the skill builds it explicitly as a **Pull Request Knowledge Graph**.
+
+Naturally, the graph lives in TinkerGraph. The skill starts a Gremlin Server in Docker and, by parsing the source in the pull request's branch, populates the graph with vertices for `File`, `Function`, `Type` and `Test`, connected by edges like `calls`, `overrides`, `implements`, `extends`, `declares` and `tests`. Each changed vertex carries a `changeLevel` that grades how much the pull request actually moved it:
+
+* `NONE` - byte-identical to the base branch
+* `FORMATTING` - only comments or whitespace changed
+* `BEHAVIORAL` - the body changed, but the signature is stable
+* `STRUCTURAL` - the signature changed, or the member was added or removed
+
+That distinction matters more than it might seem. A file-level "this changed" flag can't tell the method that was rewritten from the untouched helper sitting next to it, and a review that treats them the same will spend its attention in the wrong places.
+
+The graph also reaches beyond code. `Discussion` and `Comment` vertices capture the JIRA issue, linked dev list threads, related proposals and the pull request's own review history. Every edge carries a `confidence` value of `EXTRACTED`, `INFERRED` or `AMBIGUOUS`, which records whether a relationship was read directly from source or deduced, and that lets the agent (and the reviewer) separate observed fact from reasonable guess. As I'll get to shortly, it also holds the project's memory of why the change was made.
+
+![The tinker-review knowledge graph schema](/assets/images/tinker-review-schema.svg)
+
+## Asking the graph questions
+
+Once the graph exists, much of the structural analysis is just Gremlin. Blast radius, for example, asks how much code sits upstream of a changed function within a few hops, following both callers and overriders:
+
+{% highlight groovy %}
+g.V(functionId).
+  repeat(__.in('calls', 'overrides').dedup()).
+    times(3).emit().
+  dedup().
+  count()
+{% endhighlight %}
+
+A similar traversal walks `implements` and `extends` backward from a changed type to measure the impact that flows through a type hierarchy rather than through direct calls. Change coherence uses `connectedComponent()` step to ask whether every changed file can be reached from every other one, which is a good way to detect a pull request that quietly bundles unrelated work. There are also checks for centrality, test coverage gaps, orphans and Louvain community detection over the code subgraph, which groups the change into densely connected themes.
+
+These basic Gremlin traversals help provide background and context to the agent in a structured way, offering concrete insight that they can act upon.
+
+## Two phases, split by judgment
+
+The skill runs in two phases where the first is deterministic and the second needs judgment.
+
+In the first phase, a script fetches the pull request, creates a worktree and starts the server. It then parses the pull request's source with [Tree-sitter](https://tree-sitter.github.io/tree-sitter/), a parsing library that turns code in many languages into syntax trees, and uses those trees to populate the graph with the functions, types, calls and tests it finds. From there, it discovers related discussions and project memory and runs every structural check. Its output is an `evidence.json` file. Anything that can be computed reliably without interpretation belongs here.
+
+The second phase belongs to the agent. It connects to the same live graph through a small command line tool and adds relationships that require understanding what the code means, not just how it is written. Tree-sitter can see that one method calls another, but it takes the agent to recognize that a method in gremlin-python is that language's implementation of the `fold()` step. It works through the `INFERRED` edges, reads the source and promotes or downgrades each one. What it does at each point is guided by **playbooks**, which are markdown checklists that carry TinkerPop domain knowledge. Playbooks may apply across all of the codebase or be designed such that they isolate to specific areas of code. Each playbook says what to add to the graph, what to look for in the source, how to test and how to weigh what it finds. Adding new playbooks over time further enriches the graph and deepens the scope of the agent's code review.
+
+Testing deserves its own note. When the change has something a user can actually run, the skill can build the pull request, start a Gremlin Server from those artifacts and hand the feature to a separate subagent that is briefed as a minimally experienced TinkerPop user. That subagent gets the pull request description, the documentation and the relevant Gherkin feature test as examples. It does not get the source code, the graph or the review findings. It tests blind, and where it stumbles is a helpful signal about the usability of the feature.
+
+Finally, the agent writes its narrative into a JSON file and a renderer turns it into an HTML report for the reviewer's consumption.
+
+## Bringing in project memory
+
+Code, tests and discussions tell a reviewer what a change is, but they rarely say why it took the shape it did. That part is the project's lore, like the alternatives that were tried and abandoned or the trade-offs the author accepted knowingly, and in [Remembering Why in Apache TinkerPop]({% post_url 2026-10-12-snippet-28 %}) I described how TinkerPop uses [Beads](https://github.com/gastownhall/beads) to write it down as the work happens. Back in April, I closed [an earlier post on Beads]({% post_url 2026-04-27-snippet-24 %}) by wondering whether Gremlin might someday help navigate a Beads graph to guide TinkerPop's own development. Code review turned out to be where that happened.
+
+Beads is itself a graph. Its issues are connected by `blocks`, `relates-to`, `supersedes` and other dependency edges. So bringing it into the review turned out to be a matter of subgraphing one graph into another. Record beads carry external references to artifacts like a JIRA issue or a pull request, so the skill finds the records that name the pull request under review (or its JIRA, dev list thread or proposal), climbs to the roots each belongs to (a record can be shared by more than one piece of work) and loads those subtrees. Each one becomes a `Bead` vertex in TinkerGraph with its dependency edges carried over, and each record gets a `records` edge to the `Discussion` vertex it names. During the second phase, the agent adds `governs` edges from decisions to the functions, types and files they are actually about. The result is the author's reasoning sitting right next to the code it explains, connected by edges that can be traversed like any other.
+
+How the agent treats that memory matters as much as having it. The general playbook says chosen decisions are claims to verify, not reasoning to accept. A decision that says "this invariant holds" gets checked against the code, and against the build or the functional test where the claim is about behavior. A rejected alternative only settles a "why not X?" question if the reason X lost is still true of the code. That check works because of how TinkerPop writes rejections. When an alternative is turned down, the bead has to explain the cause and effect that made it fail, what I called a mechanism in the previous post, rather than offer an opinion about it. "Too slow" gives the agent nothing to check. "Every lookup has to scan the whole log" names a condition the agent can go and look for in the code. And where the beads stop, the agent is told to look harder. Changed code that no decision governs had its reasoning recorded nowhere, so it gets the closest read. The review never writes to beads, and the blind tester never sees them, which keeps its stumbles honest.
+
+## Trying it on TinkerStorageGraph
+
+To see what this looks like in practice, I ran tinker-review on [#3639](https://github.com/apache/tinkerpop/pull/3639), which adds durable, pluggable storage to TinkerGraph through a new `TinkerStorageGraph`. It touches dozens of files across several modules, and it had already been through a round of review from other committers. It is also my pull request, which made this an interesting test of whether the skill could tell me something I didn't already know about my own code.
+
+![tinker-review report summary for PR #3639](/assets/images/tinker-review-skill-example-1.png)
+
+I think that iterations of blind testing helped identify a great many bugs. For example, the testing subagent, knowing only what the documentation told it, tried entirely ordinary things like adding a date as a property value. This test surfaced a problem that any user could trip over in the Gremlin Console, where turning on storage quietly narrows the kinds of values the graph will accept. Nothing in the documentation said as much. That is a gap no amount of reading the code would have revealed, because the code was doing exactly what it was written to do. The blind testing also attempted real-world workloads that uncovered race conditions and corner cases that led to data corruption. 
+
+What impressed me most was how the different kinds of evidence came together. The code review pointed at a suspicious path, the blind tester showed that path was reachable by a regular user and the analysis of the tests explained why the existing tests never caught it. There were plenty of tests for these features, but they exercised paths that stopped short of the specific scenarios that broke. Each piece supported the others, so by the end there was no real question about what needed fixing or how urgently.
+
+The report was equally clear about what it was not sure of. Questions that were really design decisions, such as whether the documentation is clear enough about the intended single-writer use of the storage, were raised as open questions rather than graded as defects. A few loosely matched links that the graph couldn't confirm were left flagged and kept out of the findings entirely. Knowing which concerns are defects, which are judgment calls and which are noise is a big part of what makes a review useful, and the report kept those things separate.
+
+Project memory played a bigger part in the review's judgment than I expected and here is what they contributed:
+
+* **Settled questions stayed settled.** Seven of the rejected alternatives were exactly the "why not X?" questions a reviewer would naturally ask, such as bumping the storage format version (the deferred decision from the previous post), renumbering the dictionary on compaction or keeping index definitions in the log. Rather than raising them as findings, the agent checked that the recorded reasoning still held in the code and presented those topics as trade-offs for the reader to weigh rather than defects to fix.
+* **A decision produced a finding directly.** One decision recorded that dictionary numbering is preserved across compaction, but a Javadoc comment in the codec said the dictionary is "rebuilt fresh on compaction." Without the decision, there would have been no reason to doubt the comment.
+* **Fragile spots got a closer look.** One decision recorded a fix that shipped with no test, guarded only by a comment explaining an invariant. That led the agent to confirm that the invariant really does hold in the code.
+
+The memory also had a subtler effect. Knowing that I had deliberately accepted a particular limitation led the agent to propose a fix that fit my stated position rather than grade the issue as blocking. That is fair calibration, but it is also deference, and I think a reviewer should be aware that the author's reasoning can pull a review toward the author's point of view. That is precisely why the playbook insists on treating decisions as claims to verify.
+
+Finally, each iteration of `tinker-review` further expands memory as findings effectively become more beads. In addition to just fixing problems in the code and documentation, the additional beads reinforce decisions and close down open design paths which in turn drives blocking findings closer and closer to zero for each round of review. While I've not used this enough yet to determine if zero is achievable in an automated way, I think it's worth exploring because it would allow a considerable amount of agent-based pull request refinement well before human review. It would be great if my first look at a `tinker-review` report was enough to convince me that a large pull request was a clear `+1`. In this way, large pull requests would look a lot more like Micro Pull Requests.
+
+## The reviewer is still the reviewer
+
+I think it is important to be clear about what tinker-review is not. It does not approve or reject anything, and it is not trying to replace the people who review TinkerPop's pull requests. It produces an evidence package for a human who still has to make the call. What it changes is where that human starts. Instead of starting with a diff and a blank page, they start with a map of the change, a route through it and a list of places worth looking hard at, each backed by the graph, the source or a testable reproduction.
+
+There is also something here that goes beyond code review. A knowledge graph turned out to be a natural way to give an agent structured context about a complex system, much more so than handing it a pile of files and hoping it finds the relationships on its own. That project memory could be folded in simply by pulling a subgraph out of one graph and into another says a lot about how well graphs compose as context. The graph answers the mechanical questions precisely, and that frees the agent to spend its effort on the parts that require judgment. I suspect that pattern will show up in a lot of places, and it is nice to see TinkerPop sitting at the center of it.
