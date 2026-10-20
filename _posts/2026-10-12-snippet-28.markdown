@@ -39,7 +39,7 @@ Every piece of work hangs off a **root bead**, which is usually a feature, epic 
 
 ## Capturing the road not taken
 
-A decision bead records a choice and its reasoning. TinkerPop's approach goes a step further in that that every chosen decision is typically paired with a **rejected** sibling, connected by a `related` edge. The chosen decision says why it won and what it rules out. The rejected one says what the alternative concretely was, why it lost and what settled it.
+A decision bead records a choice and its reasoning. TinkerPop's approach goes a step further in that that every chosen decision is typically paired with a **rejected** sibling, connected by a `relates-to` edge. The chosen decision says why it won and what it rules out. The rejected one says what the alternative concretely was, why it lost and what settled it.
 
 Knowing when to write one is the tricky part, so `PRIME.md` doesn't leave it to judgment. It names five observable events that signal a decision has happened:
 
